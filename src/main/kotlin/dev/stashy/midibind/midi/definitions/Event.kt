@@ -9,7 +9,7 @@ open class MidiEvent(override val data: Array<Int>) : MidiData {
         fun convert(data: Array<Int>): MidiEvent {
             return when (data[0].msb) {
                 MessageTypes.NoteOn, MessageTypes.NoteOff -> object : MidiEvent(data), NoteData,
-                    VelocityData {} //TODO convert all
+                    VelocityData {}
                 MessageTypes.ControlChange -> object : MidiEvent(data), ControlData {}
                 MessageTypes.Aftertouch -> object : MidiEvent(data), AftertouchData {}
                 MessageTypes.ProgChange -> object : MidiEvent(data), ProgramData {}
