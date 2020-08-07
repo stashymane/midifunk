@@ -12,10 +12,10 @@ class EventTests {
 
     @Test
     fun conversionTest() {
-        assert(noteOn is NoteData)
-        if (noteOn is NoteData) assert(noteOn.note == 1)
-        assert(noteOn is VelocityData)
-        if (noteOn is VelocityData) assert(noteOn.velocity == 2)
+        assertTrue(noteOn is NoteData)
+        if (noteOn is NoteData) assertTrue(noteOn.note == 1)
+        assertTrue(noteOn is VelocityData)
+        if (noteOn is VelocityData) assertTrue(noteOn.velocity == 2)
     }
 
     @Test
