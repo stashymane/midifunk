@@ -56,6 +56,8 @@ interface VelocityData : MidiData, NoteData {
 interface ControlData : ChannelData {
     val control: Int
         get() = data[1]
+    val value: Int
+        get() = data[2]
 }
 
 interface AftertouchData : MessageData, MidiData, NoteData {
