@@ -8,8 +8,7 @@ open class MidiEvent(override val data: Array<Int>) : MidiData {
     companion object {
         fun convert(data: Array<Int>): MidiEvent {
             return when (data[0].msb) {
-                MessageTypes.NoteOn, MessageTypes.NoteOff -> object : MidiEvent(data), NoteData,
-                    VelocityData {}
+                MessageTypes.NoteOn, MessageTypes.NoteOff -> object : MidiEvent(data), NoteData {}
                 MessageTypes.ControlChange -> object : MidiEvent(data), ControlData {}
                 MessageTypes.Aftertouch -> object : MidiEvent(data), AftertouchData {}
                 MessageTypes.ProgChange -> object : MidiEvent(data), ProgramData {}
@@ -42,13 +41,10 @@ interface ChannelData : StatusData {
 }
 
 interface NoteData : MidiData, ChannelData {
-    val note: Int
-        get() = data[1]
     val noteStatus: Boolean
         get() = data[0].msb == MessageTypes.NoteOn
-}
-
-interface VelocityData : MidiData, NoteData {
+    val note: Int
+        get() = data[1]
     val velocity: Int
         get() = data[2]
 }
