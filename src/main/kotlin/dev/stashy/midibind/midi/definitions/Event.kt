@@ -44,6 +44,8 @@ interface ChannelData : StatusData {
 interface NoteData : MidiData, ChannelData {
     val note: Int
         get() = data[1]
+    val noteStatus: Boolean
+        get() = data[0].msb == MessageTypes.NoteOn
 }
 
 interface VelocityData : MidiData, NoteData {
