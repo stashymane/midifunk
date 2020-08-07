@@ -14,8 +14,6 @@ class EventTests {
     fun conversionTest() {
         assertTrue(noteOn is NoteData)
         if (noteOn is NoteData) assertTrue(noteOn.note == 1)
-        assertTrue(noteOn is VelocityData)
-        if (noteOn is VelocityData) assertTrue(noteOn.velocity == 2)
     }
 
     @Test
