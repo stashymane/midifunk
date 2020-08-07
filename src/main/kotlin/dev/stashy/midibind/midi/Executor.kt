@@ -3,21 +3,26 @@ package dev.stashy.midibind.midi
 import dev.stashy.midibind.midi.definitions.MidiEvent
 
 class Executor {
-    val filters = mutableListOf<(MidiEvent) -> MidiEvent?>()
+    val mods = mutableListOf<(MidiEvent) -> MidiEvent?>()
     val actions = mutableListOf<(MidiEvent) -> Unit>()
 
     fun sendMessage(msg: MidiEvent) {
         var temp: MidiEvent? = msg
-        filters.forEach { f ->
-            temp?.let { temp = f.invoke(it) }
+        mods.forEach { f ->
+            temp?.let { temp = f(it) }
         }
         temp?.let { filtered ->
-            actions.forEach { it.invoke(filtered) }
+            actions.forEach { it(filtered) }
         }
     }
 
-    fun filter(filter: (MidiEvent) -> MidiEvent?): Executor {
-        filters += filter
+    fun filter(filter: (MidiEvent) -> Boolean): Executor {
+        modify { e: MidiEvent -> if (filter(e)) e else null }
+        return this
+    }
+
+    fun modify(mod: (MidiEvent) -> MidiEvent?): Executor {
+        mods += mod
         return this
     }
 
