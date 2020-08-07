@@ -3,7 +3,7 @@ package dev.stashy.midibind
 import dev.stashy.midibind.midi.Executor
 import dev.stashy.midibind.midi.definitions.MidiEvent
 import dev.stashy.midibind.midi.definitions.NoteData
-import dev.stashy.midibind.midi.definitions.VelocityData
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class EventTests {
