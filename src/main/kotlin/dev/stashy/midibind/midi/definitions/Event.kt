@@ -1,10 +1,8 @@
 package dev.stashy.midibind.midi.definitions
 
-import dev.stashy.midibind.midi.MessageTypes
-import dev.stashy.midibind.midi.lsb
-import dev.stashy.midibind.midi.msb
+import dev.stashy.midibind.midi.*
 
-open class MidiEvent(override val data: Array<Int>) : MidiData {
+open class MidiEvent(override var data: Array<Int>) : MidiData {
     companion object {
         fun convert(data: Array<Int>): MidiEvent {
             return when (data[0].msb) {
@@ -22,58 +20,100 @@ open class MidiEvent(override val data: Array<Int>) : MidiData {
 }
 
 interface MidiData {
-    val data: Array<Int>
+    var data: Array<Int>
 }
 
 interface StatusData : MidiData {
-    val status: Int
+    var status: Int
         get() = data[0]
+        set(value) {
+            data[0] = value
+        }
 }
 
 interface MessageData : StatusData {
-    val message: Int
+    var message: Int
         get() = status.msb
+        set(value) {
+            status = status.withMsb(value)
+        }
 }
 
 interface ChannelData : StatusData {
-    val channel: Int
+    var channel: Int
         get() = status.lsb
+        set(value) {
+            status = status.withLsb(value)
+        }
 }
 
 interface NoteData : MidiData, ChannelData {
-    val noteStatus: Boolean
+    var noteStatus: Boolean
         get() = data[0].msb == MessageTypes.NoteOn
-    val note: Int
+        set(value) {
+            data[0] = data[0].withMsb(if (value) MessageTypes.NoteOn else MessageTypes.NoteOff)
+        }
+    var note: Int
         get() = data[1]
-    val velocity: Int
+        set(value) {
+            data[1] = value
+        }
+    var velocity: Int
         get() = data[2]
+        set(value) {
+            data[2] = value
+        }
 }
 
 interface ControlData : ChannelData {
-    val control: Int
+    var control: Int
         get() = data[1]
-    val value: Int
+        set(value) {
+            data[1] = value
+        }
+    var value: Int
         get() = data[2]
+        set(value) {
+            data[2] = value
+        }
 }
 
 interface AftertouchData : MessageData, MidiData, NoteData {
-    val pressure: Int
+    var pressure: Int
         get() = if (message == MessageTypes.ChanAftertouch) data[2] else data[1]
+        set(value) {
+            if (message == MessageTypes.ChanAftertouch)
+                data[2] = value
+            else
+                data[1] = value
+        }
 }
 
 interface ProgramData : MidiData, ChannelData {
-    val program: Int
+    var program: Int
         get() = data[1]
+        set(value) {
+            data[1] = value
+        }
 }
 
 interface PitchWheelRangeData : MidiData { //TODO check how this works
-    val min: Int
+    var min: Int
         get() = data[1].lsb
-    val max: Int
+        set(value) {
+            data[1] = data[1].withLsb(value)
+        }
+    var max: Int
         get() = data[2].msb
+        set(value) {
+            data[2] = data[2].withMsb(value)
+        }
 }
 
 interface SysExData : MidiData {
-    val sysEx: Array<Int>
+    var sysEx: Array<Int>
         get() = data.copyOfRange(1, data.size - 2)
+        set(value) {
+            data = arrayOf(data[0]).plus(value.copyOfRange(0, value.size - 1))
+        }
 }
