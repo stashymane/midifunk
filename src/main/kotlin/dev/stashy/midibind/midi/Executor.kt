@@ -19,8 +19,7 @@ class Executor {
     }
 
     fun filter(filter: (MidiEvent) -> Boolean): Executor {
-        modify { e: MidiEvent -> if (filter(e)) e else null }
-        return this
+        return modify { e: MidiEvent -> if (filter(e)) e else null }
     }
 
     fun modify(mod: (MidiEvent) -> MidiEvent?): Executor {
