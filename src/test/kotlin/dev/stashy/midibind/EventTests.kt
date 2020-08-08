@@ -1,6 +1,6 @@
 package dev.stashy.midibind
 
-import dev.stashy.midibind.midi.Executor
+import dev.stashy.midibind.midi.EventReceiver
 import dev.stashy.midibind.midi.definitions.MidiEvent
 import dev.stashy.midibind.midi.definitions.NoteData
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -20,7 +20,7 @@ class EventTests {
     @Test
     fun filterTest() {
         var ran = false
-        val a = Executor().filter { it is NoteData }.addAction { ran = true }
+        val a = EventReceiver().filter { it is NoteData }.addAction { ran = true }
         a.sendMessage(cc)
         assertTrue(!ran) //TODO check why it actually runs here
         ran = false
@@ -32,7 +32,7 @@ class EventTests {
     fun modTest() {
         val vel = 5
         var test = -1
-        val a = Executor().modify { (it as NoteData).velocity = vel; it }.addAction { test = (it as NoteData).velocity }
+        val a = EventReceiver().modify { (it as NoteData).velocity = vel; it }.addAction { test = (it as NoteData).velocity }
         a.sendMessage(noteOn)
         assertEquals(vel, test)
     }

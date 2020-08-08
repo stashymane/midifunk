@@ -9,7 +9,7 @@ import javax.sound.midi.Receiver
 class Device(private val dev: MidiDevice) : Receiver {
     constructor(info: MidiDevice.Info) : this(MidiSystem.getMidiDevice(info))
 
-    val executors = mutableListOf<Executor>()
+    val executors = mutableListOf<EventReceiver>()
 
     init {
         dev.transmitters.forEach { //TODO automatically open/close channels based on actions

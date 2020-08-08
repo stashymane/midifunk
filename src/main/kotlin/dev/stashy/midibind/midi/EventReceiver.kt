@@ -2,7 +2,7 @@ package dev.stashy.midibind.midi
 
 import dev.stashy.midibind.midi.definitions.MidiEvent
 
-class Executor {
+class EventReceiver {
     val enabled = true
     val mods = mutableListOf<(MidiEvent) -> MidiEvent?>()
     val actions = mutableListOf<(MidiEvent) -> Unit>()
@@ -18,16 +18,16 @@ class Executor {
         }
     }
 
-    fun filter(filter: (MidiEvent) -> Boolean): Executor {
+    fun filter(filter: (MidiEvent) -> Boolean): EventReceiver {
         return modify { e: MidiEvent -> if (filter(e)) e else null }
     }
 
-    fun modify(mod: (MidiEvent) -> MidiEvent?): Executor {
+    fun modify(mod: (MidiEvent) -> MidiEvent?): EventReceiver {
         mods += mod
         return this
     }
 
-    fun addAction(action: (MidiEvent) -> Unit): Executor {
+    fun addAction(action: (MidiEvent) -> Unit): EventReceiver {
         actions += action
         return this
     }
