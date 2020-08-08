@@ -17,7 +17,13 @@ class EventTests {
     }
 
     @Test
-    fun execTest() {
-        val a = Executor().filter { noteOn is NoteData }
+    fun filterTest() {
+        var ran = false
+        val a = Executor().filter { it is NoteData }.addAction { ran = true }
+        a.sendMessage(cc)
+        assertTrue(!ran) //TODO check why it actually runs here
+        ran = false
+        a.sendMessage(noteOn)
+        assertTrue(ran)
     }
 }
