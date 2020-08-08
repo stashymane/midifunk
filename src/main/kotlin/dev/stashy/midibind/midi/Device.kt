@@ -9,7 +9,7 @@ import javax.sound.midi.Receiver
 class Device(private val dev: MidiDevice) : Receiver {
     constructor(info: MidiDevice.Info) : this(MidiSystem.getMidiDevice(info))
 
-    val executors = mutableListOf<EventReceiver>()
+    val receivers = mutableListOf<EventReceiver>()
 
     init {
         dev.transmitters.forEach { //TODO automatically open/close channels based on actions
@@ -22,7 +22,7 @@ class Device(private val dev: MidiDevice) : Receiver {
     override fun send(message: MidiMessage?, timeStamp: Long) {
         if (message == null) return
         val data = MidiEvent.convert(message.message.map { it.toInt() }.toTypedArray())
-        executors.forEach { it.sendMessage(data) }
+        receivers.forEach { it.sendMessage(data) }
     }
 
     override fun close() {
