@@ -6,7 +6,7 @@ import javax.sound.midi.MidiMessage
 import javax.sound.midi.MidiSystem
 import javax.sound.midi.Receiver
 
-class Device(private val dev: MidiDevice) : Receiver {
+class Device(val dev: MidiDevice) : Receiver {
     constructor(info: MidiDevice.Info) : this(MidiSystem.getMidiDevice(info))
 
     val receivers = mutableListOf<EventReceiver>()
