@@ -12,11 +12,8 @@ class Device(private val dev: MidiDevice) : Receiver {
     val receivers = mutableListOf<EventReceiver>()
 
     init {
-        dev.transmitters.forEach { //TODO automatically open/close channels based on actions
-            it.receiver = this
-        }
-        dev.transmitter.receiver = this
         dev.open()
+        dev.transmitter.receiver = this
     }
 
     override fun send(message: MidiMessage?, timeStamp: Long) {
