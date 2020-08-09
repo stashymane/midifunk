@@ -1,8 +1,5 @@
-package dev.stashy.midibind
+package dev.stashy.midifunk
 
-import dev.stashy.midifunk.EventReceiver
-import dev.stashy.midifunk.MidiEvent
-import dev.stashy.midifunk.NoteData
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test

@@ -1,7 +1,5 @@
 package dev.stashy.midifunk
 
-import dev.stashy.midibind.midi.*
-
 open class MidiEvent(override var data: Array<Int>) : MidiData {
     companion object {
         fun convert(data: Array<Int>): MidiEvent {

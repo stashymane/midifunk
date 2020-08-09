@@ -1,9 +1,5 @@
-package dev.stashy.midibind
+package dev.stashy.midifunk
 
-import dev.stashy.midifunk.lsb
-import dev.stashy.midifunk.msb
-import dev.stashy.midifunk.withLsb
-import dev.stashy.midifunk.withMsb
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
