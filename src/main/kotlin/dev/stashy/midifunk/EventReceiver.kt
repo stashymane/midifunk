@@ -10,13 +10,15 @@ class EventReceiver {
         var temp: MidiEvent? = msg
         mods.forEach { f ->
             temp?.let { temp = f(it) }
+            if (temp == null)
+                return
         }
         temp?.let { filtered ->
             actions.forEach { it(filtered) }
         }
     }
 
-    fun filter(filter: (MidiEvent) -> Boolean): EventReceiver {
+    inline fun filter(crossinline filter: (MidiEvent) -> Boolean): EventReceiver {
         return modify { e: MidiEvent -> if (filter(e)) e else null }
     }
 
