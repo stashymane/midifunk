@@ -1,4 +1,4 @@
-package dev.stashy.midibind.midi.definitions
+package dev.stashy.midifunk
 
 import dev.stashy.midibind.midi.*
 
@@ -6,13 +6,20 @@ open class MidiEvent(override var data: Array<Int>) : MidiData {
     companion object {
         fun convert(data: Array<Int>): MidiEvent {
             return when (data[0].msb) {
-                MessageTypes.NoteOn, MessageTypes.NoteOff -> object : MidiEvent(data), NoteData {}
-                MessageTypes.ControlChange -> object : MidiEvent(data), ControlData {}
-                MessageTypes.Aftertouch -> object : MidiEvent(data), AftertouchData {}
-                MessageTypes.ProgChange -> object : MidiEvent(data), ProgramData {}
-                MessageTypes.ChanAftertouch -> object : MidiEvent(data), AftertouchData {}
-                MessageTypes.PitchRange -> object : MidiEvent(data), PitchWheelRangeData {}
-                MessageTypes.SysEx -> object : MidiEvent(data), SysExData {}
+                MessageTypes.NoteOn, MessageTypes.NoteOff -> object : MidiEvent(data),
+                    NoteData {}
+                MessageTypes.ControlChange -> object : MidiEvent(data),
+                    ControlData {}
+                MessageTypes.Aftertouch -> object : MidiEvent(data),
+                    AftertouchData {}
+                MessageTypes.ProgChange -> object : MidiEvent(data),
+                    ProgramData {}
+                MessageTypes.ChanAftertouch -> object : MidiEvent(data),
+                    AftertouchData {}
+                MessageTypes.PitchRange -> object : MidiEvent(data),
+                    PitchWheelRangeData {}
+                MessageTypes.SysEx -> object : MidiEvent(data),
+                    SysExData {}
                 else -> return object : MidiEvent(data) {}
             }
         }
@@ -47,7 +54,8 @@ interface ChannelData : StatusData {
         }
 }
 
-interface NoteData : MidiData, ChannelData {
+interface NoteData : MidiData,
+    ChannelData {
     var noteStatus: Boolean
         get() = data[0].msb == MessageTypes.NoteOn
         set(value) {
@@ -78,7 +86,8 @@ interface ControlData : ChannelData {
         }
 }
 
-interface AftertouchData : MessageData, MidiData, NoteData {
+interface AftertouchData : MessageData,
+    MidiData, NoteData {
     var pressure: Int
         get() = if (message == MessageTypes.ChanAftertouch) data[2] else data[1]
         set(value) {
@@ -89,7 +98,8 @@ interface AftertouchData : MessageData, MidiData, NoteData {
         }
 }
 
-interface ProgramData : MidiData, ChannelData {
+interface ProgramData : MidiData,
+    ChannelData {
     var program: Int
         get() = data[1]
         set(value) {

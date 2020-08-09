@@ -1,4 +1,4 @@
-package dev.stashy.midibind.midi
+package dev.stashy.midifunk
 
 object MessageTypes {
     const val NoteOn = 0x9

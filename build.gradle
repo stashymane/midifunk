@@ -1,22 +1,13 @@
 plugins {
     id 'java'
-    id 'application'
     id 'org.jetbrains.kotlin.jvm' version '1.3.72'
 }
 
-group 'dev.stashy.midibind'
-version '1.0-SNAPSHOT'
+group 'dev.stashy.midifunk'
+version '0.1.0'
 
 repositories {
     mavenCentral()
-}
-
-application {
-    mainClassName = "dev.stashy.midibind.MainKt"
-}
-
-run {
-    standardInput = System.in
 }
 
 dependencies {

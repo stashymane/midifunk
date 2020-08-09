@@ -1,6 +1,4 @@
-package dev.stashy.midibind.midi
-
-import dev.stashy.midibind.midi.definitions.MidiEvent
+package dev.stashy.midifunk
 
 class EventReceiver {
     val enabled = true

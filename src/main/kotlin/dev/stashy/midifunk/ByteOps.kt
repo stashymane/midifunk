@@ -1,4 +1,4 @@
-package dev.stashy.midibind.midi
+package dev.stashy.midifunk
 
 val Int.msb: Int
     get() = this and 0xF0 shr 4

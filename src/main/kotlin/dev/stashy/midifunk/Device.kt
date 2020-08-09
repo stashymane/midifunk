@@ -1,6 +1,5 @@
-package dev.stashy.midibind.midi
+package dev.stashy.midifunk
 
-import dev.stashy.midibind.midi.definitions.MidiEvent
 import javax.sound.midi.MidiDevice
 import javax.sound.midi.MidiMessage
 import javax.sound.midi.MidiSystem

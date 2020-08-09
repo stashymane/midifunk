@@ -1,6 +1,52 @@
-# midibind
-Tool for easily translating MIDI events and/or executing actions based on them.
-Not in a usable state yet.
+# midifunk
+
+Wrapper library for receiving and manipulating MIDI events.  
+**Currently in an early stage, expect breaking changes until the first major release.**
+
+## Features
+* Type-safe MIDI events
+* Event filtering and modification (in the order they are defined)
+* Stream-like API
+
+## Examples
+
+### Opening device for reading inputs
+```kotlin
+val device = Device(MidiSystem.getMidiDeviceInfo()[1])
+device.receivers += EventReceiver().addAction { println("Midi event received") }
+```
+
+### Listening for note on/off events only
+```kotlin
+device.receivers += EventReceiver()
+    .filter { it is NoteData }
+    .addAction {
+        val e = it as NoteData
+        println("Note: ${e.note} ${if (it.noteStatus) "on" else "off"} | Velocity: ${it.velocity}")
+    }
+```
+
+### Modifying a CC event to be an on/off switch
+```kotlin
+var lastValue = -1
+device.receivers += EventReceiver()
+    .filter { it is ControlData }
+    .modify {
+        val e = it as ControlData
+        if (e.value < 64)
+            e.value = 0
+        else
+            e.value = 127
+        it
+    }
+    .filter { (it as ControlData).value != lastValue }
+    .addAction {
+        val e = it as ControlData
+        lastValue = e.value
+        println("CC ${e.control} ${e.value == 127}")
+    }
+```
+
 
 ## Contributing
 Please follow [standard Kotlin code style guidelines][1], more thoroughly defined in JetBrains IDEs.
