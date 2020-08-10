@@ -10,11 +10,10 @@ fun main() {
 
 class TimeTest {
     val dev = TestDevice()
-    var testValue = 0
 
     fun java() {
-        testValue = 0
         dev.transmitter.receiver = object : Receiver {
+            var testValue = 0
             override fun send(message: MidiMessage?, timeStamp: Long) {
                 testValue++
             }
@@ -28,8 +27,8 @@ class TimeTest {
     }
 
     fun midifunk() {
-        testValue = 0
-        val d = Device(dev)
+        var testValue = 0
+        val d = InputDevice(dev)
         d.receivers += EventReceiver().addAction { testValue++ }
         val before = System.currentTimeMillis()
         spam()
