@@ -4,9 +4,10 @@ import javax.sound.midi.MidiDevice
 import javax.sound.midi.MidiMessage
 import javax.sound.midi.MidiSystem
 import javax.sound.midi.Receiver
+import kotlin.concurrent.thread
 
 
-class Device(val dev: MidiDevice) : Receiver {
+class InputDevice(val dev: MidiDevice) : Receiver {
     constructor(info: MidiDevice.Info) : this(MidiSystem.getMidiDevice(info))
 
     val receivers = mutableListOf<EventReceiver>()
@@ -18,7 +19,7 @@ class Device(val dev: MidiDevice) : Receiver {
 
     override fun send(message: MidiMessage?, timeStamp: Long) {
         if (message == null) return
-        val data = MidiEvent.convert(message.message.map { it.toInt() }.toTypedArray())
+        val data = MidiEvent.convert(message.message.map { it.toInt() }.toTypedArray(), timeStamp)
         receivers.forEach { it.sendMessage(data) }
     }
 

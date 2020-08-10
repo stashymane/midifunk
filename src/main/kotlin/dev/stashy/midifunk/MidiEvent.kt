@@ -1,24 +1,24 @@
 package dev.stashy.midifunk
 
-open class MidiEvent(override var data: Array<Int>) : MidiData {
+open class MidiEvent(override var data: Array<Int>, override var timestamp: Long = -1) : MidiData {
     companion object {
-        fun convert(data: Array<Int>): MidiEvent {
+        fun convert(data: Array<Int>, timestamp: Long = -1): MidiEvent {
             return when (data[0].msb) {
-                MessageTypes.NoteOn, MessageTypes.NoteOff -> object : MidiEvent(data),
+                MessageTypes.NoteOn, MessageTypes.NoteOff -> object : MidiEvent(data, timestamp),
                     NoteData {}
-                MessageTypes.ControlChange -> object : MidiEvent(data),
+                MessageTypes.ControlChange -> object : MidiEvent(data, timestamp),
                     ControlData {}
-                MessageTypes.Aftertouch -> object : MidiEvent(data),
+                MessageTypes.Aftertouch -> object : MidiEvent(data, timestamp),
                     AftertouchData {}
-                MessageTypes.ProgChange -> object : MidiEvent(data),
+                MessageTypes.ProgChange -> object : MidiEvent(data, timestamp),
                     ProgramData {}
-                MessageTypes.ChanAftertouch -> object : MidiEvent(data),
+                MessageTypes.ChanAftertouch -> object : MidiEvent(data, timestamp),
                     AftertouchData {}
-                MessageTypes.PitchRange -> object : MidiEvent(data),
+                MessageTypes.PitchRange -> object : MidiEvent(data, timestamp),
                     PitchWheelRangeData {}
-                MessageTypes.SysEx -> object : MidiEvent(data),
+                MessageTypes.SysEx -> object : MidiEvent(data, timestamp),
                     SysExData {}
-                else -> return object : MidiEvent(data) {}
+                else -> return object : MidiEvent(data, timestamp) {}
             }
         }
     }
@@ -26,6 +26,7 @@ open class MidiEvent(override var data: Array<Int>) : MidiData {
 
 interface MidiData {
     var data: Array<Int>
+    var timestamp: Long
 }
 
 interface StatusData : MidiData {
