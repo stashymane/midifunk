@@ -47,6 +47,19 @@ device.receivers += EventReceiver()
     }
 ```
 
+## Performance
+Currently, Midifunk on average takes about 5-7 times longer to process MIDI inputs compared to pure Java.
+Here is a rough sheet of how fast each take to process a certain amount of events on my machine (results are according to `TimeTest.kt`):
+
+Events      | Java      | Midifunk
+------      | ----      | --------
+100         | 1ms       | 6ms
+100000      | 16ms      | 51ms
+100000000   | 821ms     | 5460ms
+
+My Launchkey Mini MK3 sends about 50 clock events per second on idle and about 300 events when actively twisting two CC knobs, so the performance penalty is somewhat negligible.  
+Regardless, I will still try to optimize the library more by the first major release.
+
 
 ## Contributing
 Please follow [standard Kotlin code style guidelines][1], more thoroughly defined in JetBrains IDEs.
