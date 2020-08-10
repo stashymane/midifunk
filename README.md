@@ -1,7 +1,7 @@
 # midifunk
 
 Wrapper library for receiving and manipulating MIDI events.  
-**Currently in an early stage, expect breaking changes until the first major release.**
+**Currently in a pre-release stage, expect breaking changes until the first major release.**
 
 ## Features
 * Type-safe MIDI events
