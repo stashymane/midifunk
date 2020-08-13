@@ -48,16 +48,15 @@ device.receivers += EventReceiver()
 ```
 
 ## Performance
-Currently, Midifunk on average takes about 5-7 times longer to process MIDI inputs compared to pure Java.
-Here is a rough sheet of how fast each take to process a certain amount of events on my machine (results are according to `TimeTest.kt`):
+Currently, Midifunk on average takes about 15 times longer to process MIDI inputs compared to pure Java.
+Here is a rough sheet of how fast each take to process a certain amount of events on my machine (results via JMH):
 
-Events      | Java      | Midifunk
-------      | ----      | --------
-100         | 1ms       | 6ms
-100000      | 16ms      | 51ms
-100000000   | 821ms     | 5460ms
+| Benchmark           | Mode  | Cnt | Score   | Error    | Units  |
+| ------------------- | ----- | --- | ------- | -------- | ------ |
+| JavaBench.bench     | thrpt | 10  | 182.620 | ± 13.702 | ops/us |
+| MidifunkBench.bench | thrpt | 10  | 12.979  | ±  0.721 | ops/us |
 
-My Launchkey Mini MK3 sends about 50 clock events per second on idle and about 300 events when actively twisting two CC knobs, so the performance penalty is somewhat negligible.  
+My Launchkey Mini MK3 sends about 50 clock events per second on idle and about 300 events when actively twisting two CC knobs, so the performance penalty is negligible.  
 Regardless, I will still try to optimize the library more by the first major release.
 
 
