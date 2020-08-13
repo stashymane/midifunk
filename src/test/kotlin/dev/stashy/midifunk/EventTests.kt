@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class EventTests {
-    val noteOn = MidiEvent.convert(arrayOf(0x90, 0x01, 0x02))
-    val cc = MidiEvent.convert(arrayOf(0xB0, 0x00, 0x05))
+    val noteOn = MidiEvent.convert(mutableListOf(0x90, 0x01, 0x02))
+    val cc = MidiEvent.convert(mutableListOf(0xB0, 0x00, 0x05))
 
     @Test
     fun conversionTest() {

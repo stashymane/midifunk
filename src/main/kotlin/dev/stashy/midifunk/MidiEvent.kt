@@ -1,8 +1,8 @@
 package dev.stashy.midifunk
 
-open class MidiEvent(override var data: Array<Int>, override var timestamp: Long = -1) : MidiData {
+open class MidiEvent(override var data: MutableList<Int>, override var timestamp: Long = -1) : MidiData {
     companion object {
-        fun convert(data: Array<Int>, timestamp: Long = -1): MidiEvent {
+        fun convert(data: MutableList<Int>, timestamp: Long = -1): MidiEvent {
             return when (data[0].msb) {
                 MessageTypes.NoteOn, MessageTypes.NoteOff -> object : MidiEvent(data, timestamp),
                     NoteData {}
@@ -25,7 +25,7 @@ open class MidiEvent(override var data: Array<Int>, override var timestamp: Long
 }
 
 interface MidiData {
-    var data: Array<Int>
+    var data: MutableList<Int>
     var timestamp: Long
 }
 
@@ -120,9 +120,11 @@ interface PitchWheelRangeData : MidiData { //TODO check how this works
 }
 
 interface SysExData : MidiData {
-    var sysEx: Array<Int>
-        get() = data.copyOfRange(1, data.size - 2)
+    var sysEx: List<Int>
+        get() = data.subList(1, data.size - 1)
         set(value) {
-            data = arrayOf(data[0]).plus(value.copyOfRange(0, value.size - 1))
+            val l = value.toMutableList()
+            l.add(0, data[0])
+            data = l
         }
 }
