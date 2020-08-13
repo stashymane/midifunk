@@ -1,51 +1,8 @@
 package dev.stashy.midifunk
 
-import javax.sound.midi.*
-
-fun main() {
-    val t = TimeTest()
-    t.java()
-    t.midifunk()
-}
-
-class TimeTest {
-    val dev = TestDevice()
-
-    fun java() {
-        dev.transmitter.receiver = object : Receiver {
-            var testValue = 0
-            override fun send(message: MidiMessage?, timeStamp: Long) {
-                testValue++
-            }
-
-            override fun close() {}
-        }
-        val before = System.currentTimeMillis()
-        spam()
-        val after = System.currentTimeMillis()
-        println("Java took ${after - before}ms")
-    }
-
-    fun midifunk() {
-        var testValue = 0
-        val d = InputDevice(dev)
-        d.receivers += EventReceiver().addAction { testValue++ }
-        val before = System.currentTimeMillis()
-        spam()
-        val after = System.currentTimeMillis()
-        d.close()
-        println("MF took ${after - before}ms")
-    }
-
-    fun spam() {
-        for (i in 1..100000000)
-            dev.transmitter.receiver!!.send(object : MidiMessage(byteArrayOf(0x90.toByte(), 0x0, 0x0)) {
-                override fun clone(): Any {
-                    TODO("Not yet implemented")
-                }
-            }, System.currentTimeMillis())
-    }
-}
+import javax.sound.midi.MidiDevice
+import javax.sound.midi.Receiver
+import javax.sound.midi.Transmitter
 
 class TestDevice : MidiDevice {
     val transmitter = TestTransmitter()
