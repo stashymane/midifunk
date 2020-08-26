@@ -28,7 +28,7 @@ class JavaBench {
 
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
-    fun bench() {
+    fun send() {
         dev.transmitter.receiver!!.send(testMsg, 0)
     }
 

@@ -21,8 +21,22 @@ class MidifunkBench {
 
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
-    fun bench() {
+    fun send() {
         id.dev.transmitter.receiver!!.send(testMsg, 0)
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
+    @Timeout(time = 2)
+    fun convert() {
+        MidiEvent.convert(mutableListOf<Int>(0x90, 0x01, 0x02))
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
+    @Timeout(time = 2)
+    fun receiver() {
+        EventReceiver()
     }
 
     @TearDown
