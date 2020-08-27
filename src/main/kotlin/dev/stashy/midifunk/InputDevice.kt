@@ -25,4 +25,8 @@ class InputDevice(val dev: MidiDevice) : Receiver {
     override fun close() {
         dev.close()
     }
+
+    override fun toString(): String {
+        return "${dev.deviceInfo.name} (${dev.deviceInfo.description})"
+    }
 }
