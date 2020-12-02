@@ -5,7 +5,7 @@ import javax.sound.midi.MidiMessage
 
 @State(Scope.Benchmark)
 class MidifunkBench {
-    val id = InputDevice(TestDevice())
+    val dev = TestDevice()
     var testValue = 0
     lateinit var testMsg: MidiMessage
 
@@ -16,13 +16,13 @@ class MidifunkBench {
                 TODO("Not yet implemented")
             }
         }
-        id.receivers += EventReceiver().addAction { testValue++ }
+        dev.from.subscribe { testValue++ }
     }
 
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
     fun send() {
-        id.dev.transmitter.receiver!!.send(testMsg, 0)
+        dev.transmitter.receiver!!.send(testMsg, 0)
     }
 
     @Benchmark
@@ -32,15 +32,8 @@ class MidifunkBench {
         MidiEvent.convert(mutableListOf<Int>(0x90, 0x01, 0x02))
     }
 
-    @Benchmark
-    @BenchmarkMode(Mode.Throughput)
-    @Timeout(time = 2)
-    fun receiver() {
-        EventReceiver()
-    }
-
     @TearDown
     fun close() {
-        id.close()
+        dev.close()
     }
 }
