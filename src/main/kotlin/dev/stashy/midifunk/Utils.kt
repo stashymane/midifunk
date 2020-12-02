@@ -1,5 +1,8 @@
 package dev.stashy.midifunk
 
+import java.text.SimpleDateFormat
+import java.util.*
+
 inline val Int.msb: Int
     get() = this and 0xF0 shr 4
 
@@ -12,4 +15,12 @@ inline val Int.lsb: Int
 
 fun Int.withLsb(b: Int): Int {
     return (b and 0xF) + (this and 0xF0)
+}
+
+private var devMode: Boolean = System.getenv("midifunk_dev").equals("true", true)
+private val dateFormat = SimpleDateFormat("HH:mm:ss")
+
+fun debug(msg: String) {
+    if (devMode)
+        println("${dateFormat.format(Date())} $msg")
 }
