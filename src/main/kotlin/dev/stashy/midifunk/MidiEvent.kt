@@ -1,5 +1,7 @@
 package dev.stashy.midifunk
 
+import javax.sound.midi.MidiMessage
+
 open class MidiEvent(override var data: MutableList<Int>, override var timestamp: Long = -1) : MidiData {
     companion object {
         fun convert(data: MutableList<Int>, timestamp: Long = -1): MidiEvent {
@@ -19,6 +21,14 @@ open class MidiEvent(override var data: MutableList<Int>, override var timestamp
                 MessageTypes.SysEx -> object : MidiEvent(data, timestamp),
                     SysExData {}
                 else -> return object : MidiEvent(data, timestamp) {}
+            }
+        }
+    }
+
+    fun convert(): MidiMessage {
+        return object : MidiMessage(data.map { it.toByte() }.toByteArray()) {
+            override fun clone(): Any {
+                return this
             }
         }
     }

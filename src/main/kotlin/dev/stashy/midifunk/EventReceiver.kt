@@ -4,21 +4,22 @@ import io.reactivex.rxjava3.annotations.NonNull
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.subjects.PublishSubject
-import javax.sound.midi.MidiDevice
-import javax.sound.midi.MidiMessage
-import javax.sound.midi.MidiSystem
-import javax.sound.midi.Receiver
+import javax.sound.midi.*
 
 val MidiDevice.from: PublishSubject<MidiEvent>
     get() {
         return if (this.transmitter.receiver is EventReceiver) {
             debug("Returning EventReceiver")
-            (this.transmitter.receiver as EventReceiver).bus
+            (transmitter.receiver as EventReceiver).bus
         } else {
             debug("Creating new EventReceiver")
             EventReceiver(this).bus
         }
     }
+
+fun MidiDevice.to(e: MidiEvent) {
+    receiver.send(e.convert(), e.timestamp)
+}
 
 
 //TODO val MidiDevice.into - for sending events back to midi device
@@ -42,3 +43,4 @@ private class EventReceiver(dev: MidiDevice) : Receiver {
         bus.publish { Observable.just(data) }.publish()
     }
 }
+
