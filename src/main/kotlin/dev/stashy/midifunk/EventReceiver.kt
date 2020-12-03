@@ -21,9 +21,6 @@ fun MidiDevice.to(e: MidiEvent) {
     receiver.send(e.convert(), e.timestamp)
 }
 
-
-//TODO val MidiDevice.into - for sending events back to midi device
-
 private class EventReceiver(dev: MidiDevice) : Receiver {
     var bus = PublishSubject.create<MidiEvent>()
 
