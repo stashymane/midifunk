@@ -1,20 +1,19 @@
 package dev.stashy.midifunk
 
-import io.reactivex.rxjava3.annotations.NonNull
 import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.subjects.PublishSubject
-import javax.sound.midi.*
+import javax.sound.midi.MidiDevice
+import javax.sound.midi.MidiMessage
+import javax.sound.midi.Receiver
 
 val MidiDevice.from: PublishSubject<MidiEvent>
     get() {
-        return if (this.transmitter.receiver is EventReceiver) {
+        (this.transmitter.receiver as? EventReceiver)?.bus?.let {
             debug("Returning EventReceiver")
-            (transmitter.receiver as EventReceiver).bus
-        } else {
-            debug("Creating new EventReceiver")
-            EventReceiver(this).bus
+            return it
         }
+        debug("Creating new EventReceiver")
+        return EventReceiver(this).bus!!
     }
 
 fun MidiDevice.to(e: MidiEvent) {
@@ -22,7 +21,8 @@ fun MidiDevice.to(e: MidiEvent) {
 }
 
 private class EventReceiver(dev: MidiDevice) : Receiver {
-    var bus = PublishSubject.create<MidiEvent>()
+    var bus: PublishSubject<MidiEvent>? = PublishSubject.create()
+    val isClosed: Boolean = bus == null
 
     init {
         debug("Opening device '${dev.deviceInfo.name}'")
@@ -35,9 +35,12 @@ private class EventReceiver(dev: MidiDevice) : Receiver {
     }
 
     override fun send(message: MidiMessage?, timeStamp: Long) {
-        if (message == null) return
-        val data = MidiEvent.convert(message.message.mapTo(mutableListOf()) { it.toInt() }, timeStamp)
-        bus.publish { Observable.just(data) }.publish()
+        if (!isClosed)
+            message?.let {
+                MidiEvent.convert(message.message.mapTo(mutableListOf()) { it.toInt() }, timeStamp).let {
+                    bus!!.publish { Observable.just(it) }.publish()
+                }
+            }
     }
 }
 
