@@ -1,15 +1,16 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     id("java-library")
     id("maven-publish")
-    id("org.jetbrains.kotlin.jvm") version "1.4.0"
-    id("com.jfrog.bintray") version "1.8.5"
+    kotlin("jvm") version "1.4.32"
 }
 
 group = "dev.stashy.midifunk"
 version = "0.2.0-SNAPSHOT"
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
@@ -18,29 +19,15 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.6.2")
 }
 
-bintray {
-    user = System.getenv("BINTRAY_USER")
-    key = System.getenv("BINTRAY_KEY")
-    setPublications(name)
-    pkg.apply {
-        repo = name
-        name = name
-        setLicenses("Apache-2.0")
-        vcsUrl = "https://github.com/stashymane/midifunk"
-        version.apply {
-            name = rootProject.name
-        }
-    }
+val test: Test by tasks
+test.useJUnitPlatform()
 
-    tasks {
-        test {
-            useJUnitPlatform()
-        }
-        compileKotlin {
-            kotlinOptions.jvmTarget = "1.8"
-        }
-        compileTestKotlin {
-            kotlinOptions.jvmTarget = "1.8"
-        }
-    }
+val compileKotlin: KotlinCompile by tasks
+compileKotlin.kotlinOptions {
+    jvmTarget = "1.8"
+}
+
+val compileTestKotlin: KotlinCompile by tasks
+compileTestKotlin.kotlinOptions {
+    jvmTarget = "1.8"
 }
