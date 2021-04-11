@@ -59,6 +59,5 @@ class TestDevice : MidiDevice {
         override fun setReceiver(receiver: Receiver?) {
             rec = receiver
         }
-
     }
 }

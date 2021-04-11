@@ -17,7 +17,7 @@ fun Int.withLsb(b: Int): Int {
     return (b and 0xF) + (this and 0xF0)
 }
 
-private var devMode: Boolean = System.getenv("midifunk_dev").equals("true", true)
+private var devMode: Boolean = System.getenv("midifunk_dev").equals("true", true) //TODO replace with actual logger
 private val dateFormat = SimpleDateFormat("HH:mm:ss")
 
 fun debug(msg: String) {
