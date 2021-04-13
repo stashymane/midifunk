@@ -4,7 +4,7 @@ import javax.sound.midi.MidiDevice
 import javax.sound.midi.MidiSystem
 
 object Midifunk {
-    val deviceInfos: Array<MidiDevice.Info>
+    val descriptors: Array<MidiDevice.Info>
         get() = MidiSystem.getMidiDeviceInfo()
 }
 
