@@ -8,15 +8,28 @@ Wrapper library for receiving and manipulating MIDI events.
 * Type-safe MIDI events
 * MIDI as reactive streams (via RxJava)
 * Minimal code required for listening
-* Easy input & ~~output~~ _(coming soon)_
+* Easy input & output
+
+## Usage
+
+Gradle Kotlin
+
+```kotlin
+implementation("dev.stashy.midifunk", "midifunk", "0.3.0")
+```
+
+Gradle
+
+```groovy
+implementation group: 'dev.stashy.midifunk', name: 'midifunk', version: '0.3.0'
+```
 
 ## Examples
 
 ### Opening device for reading inputs
 
 ```kotlin
-Midifunk.deviceInfos[0].device.let {
-    it.open()
+Midifunk.descriptors[0].device.let {
     it.from.subscribe { /* you got a midi event! */ }
 }
 ```
@@ -27,19 +40,14 @@ Midifunk.deviceInfos[0].device.let {
 device.from.filter { it is NoteData }.subscribe { /* you got a note on or off event! */ }
 ```
 
-## Performance
+### Passing events to another device
 
-Currently, Midifunk on average takes about 10 times longer to process MIDI inputs compared to pure Java. Here is a rough
-sheet of how fast each take to process a certain amount of events on my machine (results via JMH):
-
-| Benchmark             | Mode  | Cnt | Score   | Error    | Units  |
-| --------------------- | ----- | --- | ------- | -------- | ------ |
-| JavaBench.send        | thrpt | 10  | 214.944 | ± 4.341 |  ops/us |
-| MidifunkBench.send    | thrpt | 10  | 24.501  | ± 0.390 |  ops/us |
-
-My Launchkey Mini MK3 sends about 50 clock events per second on idle and about 300 events when actively twisting two CC
-knobs, so the performance penalty is negligible.  
-Regardless, I will still try to optimize the library more by the first major release.
+```kotlin
+//open is required for OUT devices
+//only IN devices automatically open on first subscription
+outDevice.open()
+inDevice.from.subscribe { outDevice.to(it) }
+```
 
 ## Contributing
 
