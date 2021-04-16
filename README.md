@@ -15,13 +15,13 @@ Wrapper library for receiving and manipulating MIDI events.
 Gradle Kotlin
 
 ```kotlin
-implementation("dev.stashy.midifunk", "midifunk", "0.3.0")
+implementation("dev.stashy.midifunk", "midifunk", "x.x.x")
 ```
 
 Gradle
 
 ```groovy
-implementation group: 'dev.stashy.midifunk', name: 'midifunk', version: '0.3.0'
+implementation group: 'dev.stashy.midifunk', name: 'midifunk', version: 'x.x.x'
 ```
 
 ## Examples
