@@ -29,22 +29,25 @@ implementation group: 'dev.stashy.midifunk', name: 'midifunk', version: 'x.x.x'
 ### Opening device for reading inputs
 
 ```kotlin
-Midifunk.descriptors[0].device.let {
-    it.from.subscribe { /* you got a midi event! */ }
-}
+Midifunk.descriptors[index].device.from.subscribe { /* `from` automatically opens the device on its first subscription */ }
 ```
 
-### Listening for note on/off events only
+### Event filtering
 
 ```kotlin
-device.from.filter { it is NoteData }.subscribe { /* you got a note on or off event! */ }
+device.from.filter { it is NoteData || it is ControlData }.subscribe { /* `it` is either a note event, or a CC event */ }
+```
+
+### Listening to a single event
+
+```kotlin
+device.from.mapOptional { Optional.ofNullable(it as? NoteData) }?.subscribe { /* `it` is NoteData */ }
 ```
 
 ### Passing events to another device
 
 ```kotlin
 //open is required for OUT devices
-//only IN devices automatically open on first subscription
 outDevice.open()
 inDevice.from.subscribe { outDevice.to(it) }
 ```
