@@ -1,15 +1,15 @@
 package dev.stashy.midifunk
 
-import io.reactivex.rxjava3.disposables.Disposable
+import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.subjects.PublishSubject
 import javax.sound.midi.MidiDevice
 import javax.sound.midi.MidiMessage
 import javax.sound.midi.Receiver
 
-val MidiDevice.from: PublishSubject<MidiEvent>
+val MidiDevice.from: Observable<MidiEvent>
     get() {
-        (this.transmitter.receiver as? EventReceiver)?.bus?.let { return it }
-        return EventReceiver(this).bus
+        (this.transmitter.receiver as? EventReceiver)?.observable?.let { return it }
+        return EventReceiver(this).observable
     }
 
 fun MidiDevice.to(e: MidiEvent) {
@@ -17,13 +17,12 @@ fun MidiDevice.to(e: MidiEvent) {
 }
 
 class EventReceiver(dev: MidiDevice, setReceiver: Boolean = true) : Receiver {
-    var bus: PublishSubject<MidiEvent> = PublishSubject.create()
-    private var opener: Disposable
+    private var bus: PublishSubject<MidiEvent> = PublishSubject.create()
+    val observable: Observable<MidiEvent> = bus.doOnSubscribe { println("opened"); dev.open() }.onTerminateDetach()
 
     init {
-        dev.transmitter.receiver = this
-        bus.doOnSubscribe { dev.open() }?.subscribe()
         if (setReceiver)
+            dev.transmitter.receiver = this
     }
 
     override fun close() {
