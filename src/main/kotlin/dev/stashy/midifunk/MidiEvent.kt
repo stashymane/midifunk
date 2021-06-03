@@ -32,6 +32,16 @@ open class MidiEvent(override var data: MutableList<Int>, override var timestamp
             }
         }
     }
+
+    override fun equals(other: Any?): Boolean {
+        return other is MidiEvent && other.data == data && other.timestamp == timestamp
+    }
+
+    override fun hashCode(): Int {
+        var result = data.hashCode()
+        result = 31 * result + timestamp.hashCode()
+        return result
+    }
 }
 
 interface MidiData {
