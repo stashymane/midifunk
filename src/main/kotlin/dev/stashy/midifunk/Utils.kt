@@ -1,7 +1,5 @@
 package dev.stashy.midifunk
 
-import java.text.SimpleDateFormat
-
 inline val Int.msb: Int
     get() = this and 0xF0 shr 4
 
@@ -16,4 +14,3 @@ fun Int.withLsb(b: Int): Int {
     return (b and 0xF) + (this and 0xF0)
 }
 
-private val dateFormat = SimpleDateFormat("HH:mm:ss")
