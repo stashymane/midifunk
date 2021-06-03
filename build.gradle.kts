@@ -5,7 +5,7 @@ plugins {
     id("maven-publish")
     id("signing")
     id("io.github.gradle-nexus.publish-plugin") version "1.0.0"
-    kotlin("jvm") version "1.4.32"
+    kotlin("jvm") version "1.5.10"
 }
 
 group = "dev.stashy.midifunk"
@@ -17,7 +17,7 @@ repositories {
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("io.reactivex.rxjava3:rxjava:3.0.4")
+    implementation("io.reactivex.rxjava3:rxkotlin:3.0.1")
     testImplementation("org.junit.jupiter:junit-jupiter:5.6.2")
 }
 
