@@ -1,26 +1,30 @@
 package dev.stashy.midifunk
 
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import javax.sound.midi.ShortMessage
 
 class EventTests {
-    val noteOn = MidiEvent.convert(mutableListOf(0x90, 0x01, 0x02))
-    val cc = MidiEvent.convert(mutableListOf(0xB0, 0x00, 0x05))
-    val noteOnArr = byteArrayOf(0x00, 0x00)
+    val message = ShortMessage()
+    val event = MidiEvent.convert(message.message.mapTo(mutableListOf()) { it.toInt() })
+
     val dev = TestDevice()
 
     @Test
     fun conversionTest() {
-        assertTrue(noteOn is NoteData)
-        if (noteOn is NoteData) assertTrue(noteOn.note == 1)
+        assertTrue(event is NoteData)
+        if (event is NoteData) assertTrue(event.note == ShortMessage().data1)
     }
 
     @Test
     fun fromTest() {
-        var ran = false
-        dev.transmitter.receiver?.send(ShortMessage(), 0)
-        dev.from.lastOrError().doOnError { ran = false }.doAfterSuccess { ran = true }
-            .doFinally { assertTrue(ran, "Event was not received.") }.subscribe()
+        Thread {
+            Thread.sleep(10)
+            dev.transmitter.receiver.send(message, event.timestamp)
+        }.start()
+        val result = dev.from.blockingFirst()
+        assertEquals(event, result, event.data.joinToString(":") + " != " + result.data.joinToString(":"))
+
     }
 }

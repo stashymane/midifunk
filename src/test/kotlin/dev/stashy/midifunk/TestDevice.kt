@@ -47,16 +47,16 @@ class TestDevice : MidiDevice {
         return 1
     }
 
-    class TestTransmitter : Transmitter {
-        private var rec: Receiver? = null
+    inner class TestTransmitter : Transmitter {
+        private var rec: Receiver = EventReceiver(this@TestDevice, false)
 
-        override fun getReceiver(): Receiver? {
+        override fun getReceiver(): Receiver {
             return rec
         }
 
         override fun close() {}
 
-        override fun setReceiver(receiver: Receiver?) {
+        override fun setReceiver(receiver: Receiver) {
             rec = receiver
         }
     }
