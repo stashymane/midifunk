@@ -1,5 +1,7 @@
 # midifunk
 
+![Version tag](https://img.shields.io/github/v/release/stashymane/midifunk?label=version&sort=semver&style=flat-square)
+
 Wrapper library for receiving and manipulating MIDI events.  
 **Currently in a pre-release stage, expect breaking changes until the first major release.**
 
