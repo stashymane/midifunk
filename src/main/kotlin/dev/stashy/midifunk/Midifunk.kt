@@ -4,8 +4,8 @@ import javax.sound.midi.MidiDevice
 import javax.sound.midi.MidiSystem
 
 object Midifunk {
-    val descriptors: Array<MidiDevice.Info>
-        get() = MidiSystem.getMidiDeviceInfo()
+    val descriptors: List<MidiDevice.Info>
+        get() = MidiSystem.getMidiDeviceInfo().asList()
 }
 
 val MidiDevice.Info.device: MidiDevice
