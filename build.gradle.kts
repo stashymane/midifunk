@@ -1,24 +1,23 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("java-library")
-    id("maven-publish")
-    id("signing")
+    `java-library`
+    `maven-publish`
+    signing
     id("io.github.gradle-nexus.publish-plugin") version "1.0.0"
-    kotlin("jvm") version "1.5.10"
+    kotlin("jvm") version "1.5.21"
 }
 
 group = "dev.stashy.midifunk"
-version = "0.4.1"
+version = "0.5.0"
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("io.reactivex.rxjava3:rxkotlin:3.0.1")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.6.2")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.7.2")
 }
 
 val test: Test by tasks
