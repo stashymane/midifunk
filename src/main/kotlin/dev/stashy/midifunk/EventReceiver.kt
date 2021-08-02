@@ -16,9 +16,11 @@ fun MidiDevice.to(e: MidiEvent) {
     receiver.send(e.convert(), e.timestamp)
 }
 
-class EventReceiver(dev: MidiDevice, setReceiver: Boolean = true) : Receiver {
+class EventReceiver(private val dev: MidiDevice, setReceiver: Boolean = true) :
+    Receiver {
     private var bus: PublishSubject<MidiEvent> = PublishSubject.create()
-    val observable: Observable<MidiEvent> = bus.doOnSubscribe { dev.open() }.onTerminateDetach()
+    val observable: Observable<MidiEvent>
+        get() = bus.doOnSubscribe { dev.open() }.doFinally { if (!bus.hasObservers()) dev.close() }
 
     init {
         if (setReceiver)
