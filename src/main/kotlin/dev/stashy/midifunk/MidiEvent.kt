@@ -8,18 +8,25 @@ open class MidiEvent(override var data: MutableList<Int>, override var timestamp
             return when (data[0].msb) {
                 MessageTypes.NoteOn, MessageTypes.NoteOff -> object : MidiEvent(data, timestamp),
                     NoteData {}
+
                 MessageTypes.ControlChange -> object : MidiEvent(data, timestamp),
                     ControlData {}
-                MessageTypes.Aftertouch -> object : MidiEvent(data, timestamp),
-                    AftertouchData {}
+
+                MessageTypes.Pressure -> object : MidiEvent(data, timestamp),
+                    PressureData {}
+
                 MessageTypes.ProgChange -> object : MidiEvent(data, timestamp),
                     ProgramData {}
-                MessageTypes.ChanAftertouch -> object : MidiEvent(data, timestamp),
-                    AftertouchData {}
-                MessageTypes.PitchRange -> object : MidiEvent(data, timestamp),
-                    PitchWheelRangeData {}
+
+                MessageTypes.ChannelPressure -> object : MidiEvent(data, timestamp),
+                    PressureData {}
+
+                MessageTypes.PitchBend -> object : MidiEvent(data, timestamp),
+                    PitchBendData {}
+
                 MessageTypes.SysEx -> object : MidiEvent(data, timestamp),
                     SysExData {}
+
                 else -> return object : MidiEvent(data, timestamp) {}
             }
         }
@@ -105,12 +112,12 @@ interface ControlData : ChannelData {
         }
 }
 
-interface AftertouchData : MessageData,
+interface PressureData : MessageData,
     MidiData, NoteData {
     var pressure: Int
-        get() = if (message == MessageTypes.ChanAftertouch) data[2] else data[1]
+        get() = if (message == MessageTypes.ChannelPressure) data[2] else data[1]
         set(value) {
-            if (message == MessageTypes.ChanAftertouch)
+            if (message == MessageTypes.ChannelPressure)
                 data[2] = value
             else
                 data[1] = value
@@ -126,7 +133,7 @@ interface ProgramData : MidiData,
         }
 }
 
-interface PitchWheelRangeData : MidiData { //TODO check how this works
+interface PitchBendData : MidiData {
     var min: Int
         get() = data[1].lsb
         set(value) {
