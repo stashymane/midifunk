@@ -1,15 +1,15 @@
 package dev.stashy.midifunk
 
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.subjects.PublishSubject
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import javax.sound.midi.MidiDevice
 import javax.sound.midi.MidiMessage
 import javax.sound.midi.Receiver
 
-val MidiDevice.from: Observable<MidiEvent>
+val MidiDevice.from: SharedFlow<MidiEvent?>
     get() {
-        (this.transmitter.receiver as? EventReceiver)?.observable?.let { return it }
-        return EventReceiver(this).observable
+        (this.transmitter.receiver as? EventReceiver)?.let { return it.flow }
+        return EventReceiver(this).flow
     }
 
 fun MidiDevice.to(e: MidiEvent) {
@@ -18,9 +18,8 @@ fun MidiDevice.to(e: MidiEvent) {
 
 class EventReceiver(private val dev: MidiDevice, setReceiver: Boolean = true) :
     Receiver {
-    private var bus: PublishSubject<MidiEvent> = PublishSubject.create()
-    val observable: Observable<MidiEvent>
-        get() = bus.doOnSubscribe { dev.open() }.doFinally { if (!bus.hasObservers()) dev.close() }
+
+    val flow = MutableStateFlow<MidiEvent?>(null)
 
     init {
         if (setReceiver)
@@ -28,13 +27,11 @@ class EventReceiver(private val dev: MidiDevice, setReceiver: Boolean = true) :
     }
 
     override fun close() {
-        bus.onComplete()
+        flow.tryEmit(null)
     }
 
     override fun send(message: MidiMessage, timeStamp: Long) {
-        MidiEvent.convert(message.message.mapTo(mutableListOf()) { it.toInt() }, timeStamp).let {
-            bus.onNext(it)
-        }
+        MidiEvent.convert(message.message.mapTo(mutableListOf()) { it.toInt() }, timeStamp).let(flow::tryEmit)
     }
 }
 

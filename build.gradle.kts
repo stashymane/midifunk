@@ -16,8 +16,8 @@ repositories {
 }
 
 dependencies {
-    implementation("io.reactivex.rxjava3:rxkotlin:3.0.1")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.7.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.9.0")
 }
 
 val test: Test by tasks
@@ -70,10 +70,6 @@ nexusPublishing {
 }
 
 signing {
-    val signingKeyId: String? by project
-    val signingKey: String? by project
-    val signingPassword: String? by project
-    useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
     sign(publishing.publications["mavenJava"])
 }
 

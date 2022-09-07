@@ -1,5 +1,7 @@
 package dev.stashy.midifunk
 
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -23,8 +25,8 @@ class EventTests {
             Thread.sleep(10)
             dev.transmitter.receiver.send(message, event.timestamp)
         }.start()
-        val result = dev.from.blockingFirst()
-        assertEquals(event, result, event.data.joinToString(":") + " != " + result.data.joinToString(":"))
+        val result = runBlocking { dev.from.first() }
+        assertEquals(event, result, event.data.joinToString(":") + " != " + result?.data?.joinToString(":"))
 
     }
 }
