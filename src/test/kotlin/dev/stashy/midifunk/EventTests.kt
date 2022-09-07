@@ -21,12 +21,8 @@ class EventTests {
 
     @Test
     fun fromTest() {
-        Thread {
-            Thread.sleep(10)
-            dev.transmitter.receiver.send(message, event.timestamp)
-        }.start()
+        dev.transmitter.receiver.send(message, event.timestamp)
         val result = runBlocking { dev.from.first() }
         assertEquals(event, result, event.data.joinToString(":") + " != " + result?.data?.joinToString(":"))
-
     }
 }
