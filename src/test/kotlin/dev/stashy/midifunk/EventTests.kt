@@ -24,7 +24,7 @@ class EventTests {
     @Test
     fun replayTest() {
         dev.transmitter.receiver.send(message, event.timestamp)
-        val result = runBlocking { dev.receive.takeActive().first() }
+        val result = runBlocking { dev.receive.whileActive().first() }
         assertEquals(
             event,
             result,
@@ -48,7 +48,7 @@ class EventTests {
         }
 
         val count = async {
-            dev.receive.onSubscription { signal.emit(Unit) }.takeActive().count()
+            dev.receive.onSubscription { signal.emit(Unit) }.whileActive().count()
         }
 
         assertEquals(n, count.await(), "Received messages do not match sent messages.")

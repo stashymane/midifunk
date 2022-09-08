@@ -39,5 +39,5 @@ class EventReceiver(private val dev: MidiDevice, setReceiver: Boolean = true, re
     }
 }
 
-fun Flow<MidiEvent?>.takeActive(): Flow<MidiEvent> =
+fun Flow<MidiEvent?>.whileActive(): Flow<MidiEvent> =
     takeWhile { it != null }.filterNotNull()
