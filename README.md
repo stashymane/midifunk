@@ -2,13 +2,12 @@
 
 ![Version tag](https://img.shields.io/github/v/release/stashymane/midifunk?label=version&sort=semver&style=flat-square)
 
-Wrapper library for receiving and manipulating MIDI events.  
-**Currently in a pre-release stage, expect breaking changes until the first major release.**
+An object-based abstraction over the Java MIDI API using Kotlin Coroutines.
 
 ## Features
 
 * Type-safe MIDI events
-* MIDI as reactive streams (via RxJava)
+* MIDI as consumable flows
 * Minimal code required for listening
 * Easy input & output
 
@@ -28,35 +27,40 @@ implementation group: 'dev.stashy.midifunk', name: 'midifunk', version: 'x.x.x'
 
 ## Examples
 
+**NOTE**: `whileActive()` stops collecting MIDI events when the device is closed.  
+If you don't use it, make sure you have a way to stop collecting.
+
 ### Opening device for reading inputs
 
 ```kotlin
-Midifunk.descriptors[index].device.from.subscribe { /* `from` automatically opens the device on its first subscription */ }
+Midifunk.descriptors[index].device.receive.whileActive()
+    .collect { /* `from` automatically opens the device on its first subscription */ }
 ```
 
 ### Event filtering
 
 ```kotlin
-device.from.filter { it is NoteData || it is ControlData }.subscribe { /* `it` is either a note event, or a CC event */ }
+device.receive.whileActive().filter { it is NoteData || it is ControlData }
+    .collect { /* `it` is either a note event, or a CC event */ }
 ```
 
 ### Listening to a single event
 
 ```kotlin
-device.from.mapOptional { Optional.ofNullable(it as? NoteData) }?.subscribe { /* `it` is NoteData */ }
+device.receive.whileActive().mapNotNull { it as? NoteData }.collect { /* `it` is NoteData */ }
 ```
 
 ### Passing events to another device
 
 ```kotlin
 //open is required for OUT devices
-outDevice.open()
-inDevice.from.subscribe { outDevice.to(it) }
+inDevice.receive.whileActive().onStart { outDevice.open() }.onCompletion { outDevice.close() }
+    .collect { outDevice.send(it) }
 ```
 
 ## Contributing
 
-Please follow [standard Kotlin code style guidelines][1], more thoroughly defined in JetBrains IDEs. Other than that,
-feel free to submit pull requests - I will gladly review them.
+Although not strictly, please try to adhere to the [standard Kotlin code style guidelines][1], more thoroughly defined
+in JetBrains IDEs. Other than that, feel free to submit pull requests - I will gladly review them.
 
 [1]: https://kotlinlang.org/docs/reference/coding-conventions.html
