@@ -1,37 +1,37 @@
 package dev.stashy.midifunk
 
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.runBlocking
 import javax.sound.midi.MidiDevice
 import javax.sound.midi.MidiMessage
 import javax.sound.midi.Receiver
 
-val MidiDevice.input: Flow<MidiEvent>
-    get() {
-        val receiver = (transmitter.receiver as? EventReceiver) ?: EventReceiver(this@input)
-        return receiver.flow
-    }
+val MidiDevice.receive: SharedFlow<MidiEvent?>
+    get() = eventReceiver.flow
 
-fun MidiDevice.output(e: MidiEvent) {
+internal val MidiDevice.eventReceiver: EventReceiver
+    get() = (transmitter.receiver as? EventReceiver) ?: EventReceiver(this)
+
+fun MidiDevice.send(e: MidiEvent) {
     receiver.send(e.convert(), e.timestamp)
 }
 
-class EventReceiver(private val dev: MidiDevice, setReceiver: Boolean = true) :
+class EventReceiver(private val dev: MidiDevice, setReceiver: Boolean = true, replay: Int = 100) :
     Receiver {
 
-    private val state = MutableStateFlow<MidiEvent?>(null)
-    private val shared = state.asSharedFlow()
+    internal val state: MutableSharedFlow<MidiEvent?> =
+        MutableSharedFlow(replay = replay)
+
     val flow
-        get() = shared.onEach { if (it == null) throw CancellationException("Device ${dev.deviceInfo.name} has been closed.") }
-            .filterNotNull()
+        get() = state.asSharedFlow().onSubscription { dev.open() }
 
     init {
         if (setReceiver)
             dev.transmitter.receiver = this
     }
 
-    override fun close() {
-        state.tryEmit(null)
+    override fun close() = runBlocking {
+        state.emit(null)
     }
 
     override fun send(message: MidiMessage, timeStamp: Long) {
@@ -39,3 +39,5 @@ class EventReceiver(private val dev: MidiDevice, setReceiver: Boolean = true) :
     }
 }
 
+fun Flow<MidiEvent?>.takeActive(): Flow<MidiEvent> =
+    takeWhile { it != null }.filterNotNull()

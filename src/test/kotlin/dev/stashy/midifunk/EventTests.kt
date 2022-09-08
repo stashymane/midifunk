@@ -1,18 +1,19 @@
 package dev.stashy.midifunk
 
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import javax.sound.midi.MidiDevice
 import javax.sound.midi.ShortMessage
 
 class EventTests {
-    val message = ShortMessage()
-    val event = MidiEvent.convert(message.message.mapTo(mutableListOf()) { it.toInt() })
+    private val message = ShortMessage()
+    private val event = MidiEvent.convert(message.message.mapTo(mutableListOf()) { it.toInt() })
 
-    val dev: MidiDevice = TestDevice()
+    private val dev = TestDevice()
 
     @Test
     fun conversionTest() {
@@ -23,7 +24,7 @@ class EventTests {
     @Test
     fun replayTest() {
         dev.transmitter.receiver.send(message, event.timestamp)
-        val result = runBlocking { dev.input.first() }
+        val result = runBlocking { dev.receive.takeActive().first() }
         assertEquals(
             event,
             result,
@@ -31,5 +32,27 @@ class EventTests {
                     + result.data.joinToString(":")
         )
     }
+
+    @Test
+    fun collectTest() = runBlocking {
+        val n = 5
+        val signal = MutableSharedFlow<Unit>()
+
+        launch {
+            signal.take(1).collect {
+                repeat(n) {
+                    dev.eventReceiver.send(message, -1)
+                }
+                dev.close()
+            }
+        }
+
+        val count = async {
+            dev.receive.onSubscription { signal.emit(Unit) }.takeActive().count()
+        }
+
+        assertEquals(n, count.await(), "Received messages do not match sent messages.")
+
+        return@runBlocking
     }
 }

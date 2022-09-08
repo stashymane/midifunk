@@ -37,7 +37,9 @@ class TestDevice : MidiDevice {
         return System.currentTimeMillis()
     }
 
-    override fun close() {}
+    override fun close() {
+        transmitter.close()
+    }
 
     override fun getTransmitter(): Transmitter {
         return transmitter
@@ -54,7 +56,9 @@ class TestDevice : MidiDevice {
             return rec
         }
 
-        override fun close() {}
+        override fun close() {
+            rec.close()
+        }
 
         override fun setReceiver(receiver: Receiver) {
             rec = receiver
