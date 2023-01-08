@@ -5,7 +5,7 @@ plugins {
     `maven-publish`
     signing
     id("io.github.gradle-nexus.publish-plugin") version "1.0.0"
-    kotlin("jvm") version "1.5.21"
+    kotlin("jvm") version "1.8.0"
 }
 
 group = "dev.stashy.midifunk"
@@ -17,7 +17,7 @@ repositories {
 
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.9.0")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.9.1")
 }
 
 val test: Test by tasks
