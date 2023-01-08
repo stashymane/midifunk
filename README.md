@@ -34,7 +34,7 @@ If you don't use it, make sure you have a way to stop collecting.
 
 ```kotlin
 Midifunk.descriptors[index].device.receive.whileActive()
-    .collect { /* `from` automatically opens the device on its first subscription */ }
+    .collect { /* `receive` automatically opens the device on its first subscription */ }
 ```
 
 ### Event filtering
