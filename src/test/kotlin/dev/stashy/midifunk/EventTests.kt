@@ -29,11 +29,11 @@ class EventTests {
     fun conversionTest() {
         assertTrue(noteEvent is NoteData)
         assertTrue(afterTouchEvent is PressureData)
-        assertTrue(sysEx is SysExData)
+        assertTrue(sysExEvent is SysExData)
 
         if (noteEvent is NoteData) assertEquals(noteEvent.note, noteOn.data1.toUInt())
         if (afterTouchEvent is PressureData) assertEquals(afterTouchEvent.note, afterTouch.data1.toUInt())
-        if (sysEx is SysExData) assertEquals(sysExEvent.data.first(), sysEx.data1.toUInt())
+        if (sysExEvent is SysExData) assertEquals(sysExEvent.type, SysExData.Type.Start)
     }
 
     @Test
