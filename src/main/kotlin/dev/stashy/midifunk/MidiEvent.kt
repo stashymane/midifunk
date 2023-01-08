@@ -154,4 +154,34 @@ interface SysExData : MidiData {
             l.add(0, data[0])
             data = l
         }
+    var type: Type
+        get() {
+            val i = data[0].toInt() and 0xFF - 240;
+            return if (i <= Type.values().size)
+                Type.values()[i]
+            else
+                Type.Unknown
+        }
+        set(value) {
+            data[0] = value.code
+        }
+
+    enum class Type(val code: UInt) {
+        Unknown(240u),
+        TimeCode(241u),
+        SongPosition(242u),
+        SongSelect(243u),
+        Reserved1(244u),
+        Reserved2(245u),
+        TuneRequest(246u),
+        EndMessage(247u),
+        TimingClock(248u),
+        Reserved3(249u),
+        Start(250u),
+        Continue(251u),
+        Stop(252u),
+        Reserved4(253u),
+        ActiveSensing(254u),
+        SystemReset(255u)
+    }
 }
