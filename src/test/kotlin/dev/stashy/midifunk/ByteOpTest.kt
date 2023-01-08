@@ -7,16 +7,16 @@ class ByteOpTest {
 
     @Test
     fun read() {
-        val test = 0xAB
-        assertEquals(0xA, test.msb)
-        assertEquals(0xB, test.lsb)
+        val test: UInt = 171u
+        assertEquals(10u, test.msb)
+        assertEquals(11u, test.lsb)
     }
 
     @Test
     fun write() {
-        var test = 0x00
-        val msb = 0xA
-        val lsb = 0xB
+        var test: UInt = 0u
+        val msb: UInt = 10u
+        val lsb: UInt = 11u
         test = test.withMsb(msb)
         assertEquals(msb, test.msb)
         test = test.withLsb(lsb)

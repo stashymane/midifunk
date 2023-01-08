@@ -2,9 +2,9 @@ package dev.stashy.midifunk
 
 import javax.sound.midi.MidiMessage
 
-open class MidiEvent(override var data: MutableList<Int>, override var timestamp: Long = -1) : MidiData {
+open class MidiEvent(override var data: MutableList<UInt>, override var timestamp: Long = -1) : MidiData {
     companion object {
-        fun convert(data: MutableList<Int>, timestamp: Long = -1): MidiEvent {
+        fun convert(data: MutableList<UInt>, timestamp: Long = -1): MidiEvent {
             return when (data[0].msb) {
                 MessageTypes.NoteOn, MessageTypes.NoteOff -> object : MidiEvent(data, timestamp),
                     NoteData {}
@@ -52,12 +52,12 @@ open class MidiEvent(override var data: MutableList<Int>, override var timestamp
 }
 
 interface MidiData {
-    var data: MutableList<Int>
+    var data: MutableList<UInt>
     var timestamp: Long
 }
 
 interface StatusData : MidiData {
-    var status: Int
+    var status: UInt
         get() = data[0]
         set(value) {
             data[0] = value
@@ -65,7 +65,7 @@ interface StatusData : MidiData {
 }
 
 interface MessageData : StatusData {
-    var message: Int
+    var message: UInt
         get() = status.msb
         set(value) {
             status = status.withMsb(value)
@@ -73,7 +73,7 @@ interface MessageData : StatusData {
 }
 
 interface ChannelData : StatusData {
-    var channel: Int
+    var channel: UInt
         get() = status.lsb
         set(value) {
             status = status.withLsb(value)
@@ -87,12 +87,12 @@ interface NoteData : MidiData,
         set(value) {
             data[0] = data[0].withMsb(if (value) MessageTypes.NoteOn else MessageTypes.NoteOff)
         }
-    var note: Int
+    var note: UInt
         get() = data[1]
         set(value) {
             data[1] = value
         }
-    var velocity: Int
+    var velocity: UInt
         get() = data[2]
         set(value) {
             data[2] = value
@@ -100,12 +100,12 @@ interface NoteData : MidiData,
 }
 
 interface ControlData : ChannelData {
-    var control: Int
+    var control: UInt
         get() = data[1]
         set(value) {
             data[1] = value
         }
-    var value: Int
+    var value: UInt
         get() = data[2]
         set(value) {
             data[2] = value
@@ -114,7 +114,7 @@ interface ControlData : ChannelData {
 
 interface PressureData : MessageData,
     MidiData, NoteData {
-    var pressure: Int
+    var pressure: UInt
         get() = if (message == MessageTypes.ChannelPressure) data[2] else data[1]
         set(value) {
             if (message == MessageTypes.ChannelPressure)
@@ -126,7 +126,7 @@ interface PressureData : MessageData,
 
 interface ProgramData : MidiData,
     ChannelData {
-    var program: Int
+    var program: UInt
         get() = data[1]
         set(value) {
             data[1] = value
@@ -134,12 +134,12 @@ interface ProgramData : MidiData,
 }
 
 interface PitchBendData : MidiData {
-    var min: Int
+    var min: UInt
         get() = data[1].lsb
         set(value) {
             data[1] = data[1].withLsb(value)
         }
-    var max: Int
+    var max: UInt
         get() = data[2].msb
         set(value) {
             data[2] = data[2].withMsb(value)
@@ -147,7 +147,7 @@ interface PitchBendData : MidiData {
 }
 
 interface SysExData : MidiData {
-    var sysEx: List<Int>
+    var sysEx: List<UInt>
         get() = data.subList(1, data.size - 1)
         set(value) {
             val l = value.toMutableList()

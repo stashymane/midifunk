@@ -1,16 +1,16 @@
 package dev.stashy.midifunk
 
-inline val Int.msb: Int
-    get() = this and 0xF0 shr 4
+inline val UInt.msb: UInt
+    get() = this and 240u shr 4
 
-fun Int.withMsb(b: Int): Int {
-    return (b and 0xF shl 4) + (this and 0xF)
+fun UInt.withMsb(b: UInt): UInt {
+    return (b and 15u shl 4) + (this and 15u)
 }
 
-inline val Int.lsb: Int
-    get() = this and 0xF
+inline val UInt.lsb: UInt
+    get() = this and 15u
 
-fun Int.withLsb(b: Int): Int {
-    return (b and 0xF) + (this and 0xF0)
+fun UInt.withLsb(b: UInt): UInt {
+    return (b and 15u) + (this and 240u)
 }
 

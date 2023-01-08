@@ -1,12 +1,12 @@
 package dev.stashy.midifunk
 
 object MessageTypes {
-    const val NoteOn = 0x9
-    const val NoteOff = 0x8
-    const val Pressure = 0xA
-    const val ControlChange = 0xB
-    const val ProgChange = 0xC
-    const val ChannelPressure = 0xD
-    const val PitchBend = 0xE
-    const val SysEx = 0xF
+    const val NoteOn: UInt = 9u
+    const val NoteOff: UInt = 8u
+    const val Pressure: UInt = 10u
+    const val ControlChange: UInt = 11u
+    const val ProgChange: UInt = 12u
+    const val ChannelPressure: UInt = 13u
+    const val PitchBend: UInt = 14u
+    const val SysEx: UInt = 15u
 }

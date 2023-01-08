@@ -10,25 +10,40 @@ import org.junit.jupiter.api.Test
 import javax.sound.midi.ShortMessage
 
 class EventTests {
-    private val message = ShortMessage()
-    private val event = MidiEvent.convert(message.message.mapTo(mutableListOf()) { it.toInt() })
+    companion object Events {
+        private val noteOn = ShortMessage()
+        private val afterTouch = ShortMessage(ShortMessage.POLY_PRESSURE, 0x01, 0x02)
+        private val sysEx = ShortMessage(ShortMessage.START, 0x3, 0x4)
+
+        private val noteEvent = convert(noteOn)
+        private val afterTouchEvent = convert(afterTouch)
+        private val sysExEvent = convert(sysEx)
+
+        private fun convert(msg: ShortMessage): MidiEvent =
+            MidiEvent.convert(msg.message.mapTo(mutableListOf()) { it.toUInt() })
+    }
 
     private val dev = TestDevice()
 
     @Test
     fun conversionTest() {
-        assertTrue(event is NoteData)
-        if (event is NoteData) assertTrue(event.note == ShortMessage().data1)
+        assertTrue(noteEvent is NoteData)
+        assertTrue(afterTouchEvent is PressureData)
+        assertTrue(sysEx is SysExData)
+
+        if (noteEvent is NoteData) assertEquals(noteEvent.note, noteOn.data1.toUInt())
+        if (afterTouchEvent is PressureData) assertEquals(afterTouchEvent.note, afterTouch.data1.toUInt())
+        if (sysEx is SysExData) assertEquals(sysExEvent.data.first(), sysEx.data1.toUInt())
     }
 
     @Test
     fun replayTest() {
-        dev.transmitter.receiver.send(message, event.timestamp)
+        dev.transmitter.receiver.send(noteOn, noteEvent.timestamp)
         val result = runBlocking { dev.receive.whileActive().first() }
         assertEquals(
-            event,
+            noteEvent,
             result,
-            "Flow returned invalid result: expected ${event.data.joinToString(":")}, got "
+            "Flow returned invalid result: expected ${noteEvent.data.joinToString(":")}, got "
                     + result.data.joinToString(":")
         )
     }
@@ -41,7 +56,7 @@ class EventTests {
         launch {
             signal.take(1).collect {
                 repeat(n) {
-                    dev.eventReceiver.send(message, -1)
+                    dev.eventReceiver.send(noteOn, -1)
                 }
                 dev.close()
             }

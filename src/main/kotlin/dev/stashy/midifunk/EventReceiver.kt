@@ -35,7 +35,7 @@ class EventReceiver(private val dev: MidiDevice, setReceiver: Boolean = true, re
     }
 
     override fun send(message: MidiMessage, timeStamp: Long) {
-        MidiEvent.convert(message.message.mapTo(mutableListOf()) { it.toInt() }, timeStamp).let(state::tryEmit)
+        MidiEvent.convert(message.message.mapTo(mutableListOf()) { it.toUInt() }, timeStamp).let(state::tryEmit)
     }
 }
 
