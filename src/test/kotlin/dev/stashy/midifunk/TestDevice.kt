@@ -1,21 +1,36 @@
 package dev.stashy.midifunk
 
 import javax.sound.midi.MidiDevice
+import javax.sound.midi.MidiMessage
 import javax.sound.midi.Receiver
 import javax.sound.midi.Transmitter
 
 class TestDevice : MidiDevice {
-    val transmitter = TestTransmitter()
+    var sendCallback: (MidiMessage) -> Unit = {}
+
+    private var isOpen = false
+
+    private val transmitter = TestTransmitter()
+    private val receiver = object : Receiver {
+        override fun close() {
+        }
+
+        override fun send(message: MidiMessage, timeStamp: Long) {
+            sendCallback(message)
+        }
+    }
 
     override fun getDeviceInfo(): MidiDevice.Info {
         return object : MidiDevice.Info("Test", "stashymane", "Test device", "test") {}
     }
 
     override fun getReceiver(): Receiver {
-        TODO("Not yet implemented")
+        return receiver
     }
 
-    override fun open() {}
+    override fun open() {
+        isOpen = true
+    }
 
     override fun getTransmitters(): MutableList<Transmitter> {
         return mutableListOf()
@@ -26,11 +41,11 @@ class TestDevice : MidiDevice {
     }
 
     override fun getMaxReceivers(): Int {
-        return 0
+        return 1
     }
 
     override fun isOpen(): Boolean {
-        return true
+        return isOpen
     }
 
     override fun getMicrosecondPosition(): Long {
@@ -38,6 +53,7 @@ class TestDevice : MidiDevice {
     }
 
     override fun close() {
+        isOpen = false
         transmitter.close()
     }
 
@@ -50,18 +66,18 @@ class TestDevice : MidiDevice {
     }
 
     inner class TestTransmitter : Transmitter {
-        private var rec: Receiver = EventReceiver(this@TestDevice, false)
+        private var rec: Receiver? = null
 
-        override fun getReceiver(): Receiver {
+        override fun getReceiver(): Receiver? {
             return rec
-        }
-
-        override fun close() {
-            rec.close()
         }
 
         override fun setReceiver(receiver: Receiver) {
             rec = receiver
+        }
+
+        override fun close() {
+            rec?.close()
         }
     }
 }

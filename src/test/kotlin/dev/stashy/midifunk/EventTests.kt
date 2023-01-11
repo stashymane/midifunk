@@ -1,11 +1,9 @@
 package dev.stashy.midifunk
 
-import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import javax.sound.midi.ShortMessage
 
@@ -23,7 +21,7 @@ class EventTests {
             MidiEvent.convert(msg.message.mapTo(mutableListOf()) { it.toUInt() })
     }
 
-    private val dev = TestDevice()
+    private val testDevice = TestDevice()
 
     @Test
     fun conversionTest() {
@@ -37,37 +35,67 @@ class EventTests {
     }
 
     @Test
-    fun replayTest() {
-        dev.transmitter.receiver.send(noteOn, noteEvent.timestamp)
-        val result = runBlocking { dev.receive.whileActive().first() }
-        assertEquals(
-            noteEvent,
-            result,
-            "Flow returned invalid result: expected ${noteEvent.data.joinToString(":")}, got "
-                    + result.data.joinToString(":")
-        )
+    fun inputTest() {
+        assertTrue(!testDevice.isOpen, "Device opened before test began")
+
+        val n = 5
+        val scope = CoroutineScope(Dispatchers.Default)
+        val midifunkDevice = testDevice.asMidifunk()
+
+        var collected = 0
+        midifunkDevice.input.onEach { collected++ }.launchIn(scope)
+
+        scope.ensureActive()
+        repeat(n) {
+            testDevice.transmitter.receiver.send(ShortMessage(), 0)
+        }
+        scope.cancel()
+
+        assertEquals(n, collected, "Did not collect all sent events")
     }
 
     @Test
-    fun collectTest() = runBlocking {
-        val n = 5
-        val signal = MutableSharedFlow<Unit>()
+    fun outputTest() {
+        assertTrue(!testDevice.isOpen, "Device opened before test began")
 
-        launch {
-            signal.take(1).collect {
-                repeat(n) {
-                    dev.eventReceiver.send(noteOn, -1)
-                }
-                dev.close()
+        val n = 5
+        var output = 0
+        val midifunkDevice = testDevice.asMidifunk()
+
+        testDevice.sendCallback = { output++ }
+
+        runBlocking {
+            repeat(n) {
+                midifunkDevice.outputChannel.send(noteEvent)
             }
         }
 
-        val count = async {
-            dev.receive.onSubscription { signal.emit(Unit) }.whileActive().count()
+        assertEquals(n, output, "Messages were not output")
+    }
+
+    @Test
+    fun testAutoClose() {
+        val n = 5
+        assertTrue(!testDevice.isOpen, "Device opened before test began")
+
+        val scope = CoroutineScope(Dispatchers.Default)
+        val midifunkDevice = testDevice.asMidifunk()
+
+        val jobs = (0..n).map {
+            midifunkDevice.input.launchIn(scope)
         }
 
-        assertEquals(n, count.await(), "Received messages do not match sent messages.")
-
-        return@runBlocking
+        runBlocking {
+            jobs.forEachIndexed { i, job ->
+                job.cancelAndJoin()
+                if (i < n) {
+                    assertTrue(testDevice.isOpen, "Not all listeners are removed, device should be open")
+                } else {
+                    assertFalse(testDevice.isOpen, "Last listener removed, device should be closed")
+                }
+            }
+        }
+        scope.cancel()
+        assertFalse(scope.isActive, "Scope should not be active")
     }
 }

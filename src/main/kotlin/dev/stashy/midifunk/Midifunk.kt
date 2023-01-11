@@ -8,9 +8,6 @@ object Midifunk {
         get() = MidiSystem.getMidiDeviceInfo().asList()
 }
 
-val MidiDevice.Info.device: MidiDevice
-    get() = MidiSystem.getMidiDevice(this)
-
 val Collection<MidiDevice.Info>.inputs: List<MidiDevice.Info>
     get() = this.filter { it.device.maxReceivers != -1 }
 
