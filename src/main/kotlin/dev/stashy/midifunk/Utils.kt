@@ -1,5 +1,7 @@
 package dev.stashy.midifunk
 
+import javax.sound.midi.MidiDevice
+
 inline val UInt.msb: UInt
     get() = this and 240u shr 4
 
@@ -14,3 +16,5 @@ fun UInt.withLsb(b: UInt): UInt {
     return (b and 15u) + (this and 240u)
 }
 
+val MidiDevice.isInput: Boolean get() = maxTransmitters > 0
+val MidiDevice.isOutput: Boolean get() = maxReceivers > 0

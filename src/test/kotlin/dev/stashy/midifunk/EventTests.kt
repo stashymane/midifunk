@@ -3,7 +3,8 @@ package dev.stashy.midifunk
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import javax.sound.midi.ShortMessage
 
@@ -36,66 +37,48 @@ class EventTests {
 
     @Test
     fun inputTest() {
-        assertTrue(!testDevice.isOpen, "Device opened before test began")
-
         val n = 5
-        val scope = CoroutineScope(Dispatchers.Default)
-        val midifunkDevice = testDevice.asMidifunk()
-
         var collected = 0
-        midifunkDevice.input.onEach { collected++ }.launchIn(scope)
+        val scope = CoroutineScope(Dispatchers.Default)
 
-        scope.ensureActive()
+        val mf = testDevice.asMidifunk()
+        assertTrue(mf is InputDevice)
+        val iDevice = mf as InputDevice
+
+        val job = iDevice.input.open().onEach { collected++ }.launchIn(scope)
+        job.ensureActive()
+
         repeat(n) {
-            testDevice.transmitter.receiver.send(ShortMessage(), 0)
+            testDevice.transmitter.receiver.send(noteOn, 0)
         }
-        scope.cancel()
 
-        assertEquals(n, collected, "Did not collect all sent events")
+        runBlocking {
+            job.cancelAndJoin()
+            assertEquals(n, collected, "All input messages were not received")
+        }
+
+        mf.close()
     }
 
     @Test
     fun outputTest() {
-        assertTrue(!testDevice.isOpen, "Device opened before test began")
-
         val n = 5
-        var output = 0
-        val midifunkDevice = testDevice.asMidifunk()
+        var collected = 0
+        val scope = CoroutineScope(Dispatchers.Default)
 
-        testDevice.sendCallback = { output++ }
+        val mf = testDevice.asMidifunk()
+        testDevice.sendCallback = { collected++ }
+        assertTrue(mf is OutputDevice)
+        val oDevice = mf as OutputDevice
 
+        val channel = oDevice.output.open()
         runBlocking {
             repeat(n) {
-                midifunkDevice.outputChannel.send(noteEvent)
+                channel.send(noteEvent)
             }
         }
 
-        assertEquals(n, output, "Messages were not output")
-    }
-
-    @Test
-    fun testAutoClose() {
-        val n = 5
-        assertTrue(!testDevice.isOpen, "Device opened before test began")
-
-        val scope = CoroutineScope(Dispatchers.Default)
-        val midifunkDevice = testDevice.asMidifunk()
-
-        val jobs = (0..n).map {
-            midifunkDevice.input.launchIn(scope)
-        }
-
-        runBlocking {
-            jobs.forEachIndexed { i, job ->
-                job.cancelAndJoin()
-                if (i < n) {
-                    assertTrue(testDevice.isOpen, "Not all listeners are removed, device should be open")
-                } else {
-                    assertFalse(testDevice.isOpen, "Last listener removed, device should be closed")
-                }
-            }
-        }
-        scope.cancel()
-        assertFalse(scope.isActive, "Scope should not be active")
+        assertEquals(n, collected, "All output messages were not received")
+        mf.close()
     }
 }
