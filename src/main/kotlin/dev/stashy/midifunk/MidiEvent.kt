@@ -7,25 +7,25 @@ open class MidiEvent(override var data: MutableList<UInt>, override var timestam
         fun convert(data: MutableList<UInt>, timestamp: Long = -1): MidiEvent {
             return when (data[0].msb) {
                 MessageTypes.NoteOn, MessageTypes.NoteOff -> object : MidiEvent(data, timestamp),
-                    NoteData {}
+                    NoteEvent {}
 
                 MessageTypes.ControlChange -> object : MidiEvent(data, timestamp),
-                    ControlData {}
+                    ControlEvent {}
 
                 MessageTypes.Pressure -> object : MidiEvent(data, timestamp),
-                    PressureData {}
+                    PressureEvent {}
 
                 MessageTypes.ProgChange -> object : MidiEvent(data, timestamp),
-                    ProgramData {}
+                    ProgramEvent {}
 
                 MessageTypes.ChannelPressure -> object : MidiEvent(data, timestamp),
-                    PressureData {}
+                    PressureEvent, ChannelData {}
 
                 MessageTypes.PitchBend -> object : MidiEvent(data, timestamp),
-                    PitchBendData {}
+                    PitchBendEvent {}
 
                 MessageTypes.SysEx -> object : MidiEvent(data, timestamp),
-                    SysExData {}
+                    SysExEvent {}
 
                 else -> return object : MidiEvent(data, timestamp) {}
             }
@@ -80,7 +80,7 @@ interface ChannelData : StatusData {
         }
 }
 
-interface NoteData : MidiData,
+interface NoteEvent : MidiData,
     ChannelData {
     var noteStatus: Boolean
         get() = data[0].msb == MessageTypes.NoteOn
@@ -99,7 +99,7 @@ interface NoteData : MidiData,
         }
 }
 
-interface ControlData : ChannelData {
+interface ControlEvent : ChannelData {
     var control: UInt
         get() = data[1]
         set(value) {
@@ -112,8 +112,8 @@ interface ControlData : ChannelData {
         }
 }
 
-interface PressureData : MessageData,
-    MidiData, NoteData {
+interface PressureEvent : MessageData,
+    MidiData {
     var pressure: UInt
         get() = if (message == MessageTypes.ChannelPressure) data[2] else data[1]
         set(value) {
@@ -124,7 +124,7 @@ interface PressureData : MessageData,
         }
 }
 
-interface ProgramData : MidiData,
+interface ProgramEvent : MidiData,
     ChannelData {
     var program: UInt
         get() = data[1]
@@ -133,7 +133,7 @@ interface ProgramData : MidiData,
         }
 }
 
-interface PitchBendData : MidiData {
+interface PitchBendEvent : MidiData {
     var min: UInt
         get() = data[1].lsb
         set(value) {
@@ -146,7 +146,7 @@ interface PitchBendData : MidiData {
         }
 }
 
-interface SysExData : MidiData {
+interface SysExEvent : MidiData {
     var sysEx: List<UInt>
         get() = data.subList(1, data.size - 1)
         set(value) {

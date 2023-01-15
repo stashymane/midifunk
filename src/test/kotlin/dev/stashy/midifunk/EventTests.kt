@@ -1,6 +1,7 @@
 package dev.stashy.midifunk
 
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -26,13 +27,13 @@ class EventTests {
 
     @Test
     fun conversionTest() {
-        assertTrue(noteEvent is NoteData)
-        assertTrue(afterTouchEvent is PressureData)
-        assertTrue(sysExEvent is SysExData)
+        assertTrue(noteEvent is NoteEvent)
+        assertTrue(afterTouchEvent is PressureEvent)
+        assertTrue(sysExEvent is SysExEvent)
 
-        if (noteEvent is NoteData) assertEquals(noteEvent.note, noteOn.data1.toUInt())
-        if (afterTouchEvent is PressureData) assertEquals(afterTouchEvent.note, afterTouch.data1.toUInt())
-        if (sysExEvent is SysExData) assertEquals(sysExEvent.type, SysExData.Type.Start)
+        if (noteEvent is NoteEvent) assertEquals(noteEvent.note, noteOn.data1.toUInt())
+        if (afterTouchEvent is PressureEvent) assertEquals(afterTouchEvent.note, afterTouch.data1.toUInt())
+        if (sysExEvent is SysExEvent) assertEquals(sysExEvent.type, SysExEvent.Type.Start)
     }
 
     @Test
