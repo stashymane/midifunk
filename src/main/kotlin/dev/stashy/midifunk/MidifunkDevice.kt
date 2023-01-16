@@ -111,7 +111,7 @@ interface MidifunkDevice {
             }
 
             override fun send(message: MidiMessage, timeStamp: Long) = runBlocking {
-                channel.send(MidiEvent.convert(message.message.mapTo(mutableListOf()) { it.toUInt() }, timeStamp))
+                channel.send(MidiEvent.convert(message, timeStamp))
             }
         }
     }

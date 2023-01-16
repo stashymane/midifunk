@@ -4,6 +4,9 @@ import javax.sound.midi.MidiMessage
 
 open class MidiEvent(override var data: MutableList<UInt>, override var timestamp: Long = -1) : MidiData {
     companion object {
+        fun convert(message: MidiMessage, timestamp: Long = -1): MidiEvent =
+            convert(message.message.mapTo(mutableListOf()) { it.toUInt() }, timestamp)
+
         fun convert(data: MutableList<UInt>, timestamp: Long = -1): MidiEvent {
             return when (data[0].msb) {
                 MessageTypes.NoteOn, MessageTypes.NoteOff -> object : MidiEvent(data, timestamp),
