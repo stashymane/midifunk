@@ -19,11 +19,11 @@ interface MidiPort {
 }
 
 interface InputPort : MidiPort {
-    fun open(): Flow<MidiEvent>
+    fun open(): Flow<MidiData>
 }
 
 interface OutputPort : MidiPort {
-    fun open(): SendChannel<MidiEvent>
+    fun open(): SendChannel<MidiData>
 }
 
 interface InputDevice {
@@ -70,11 +70,11 @@ interface MidifunkDevice {
             override val input: InputPort = object : InputPort {
                 val scope = CoroutineScope(Dispatchers.Default)
 
-                val channel = Channel<MidiEvent>()
+                val channel = Channel<MidiData>()
                 val receiver = generateReceiver(channel)
                 val flow = channel.consumeAsFlow().shareIn(scope, SharingStarted.WhileSubscribed())
 
-                override fun open(): Flow<MidiEvent> {
+                override fun open(): Flow<MidiData> {
                     device.transmitter.receiver = receiver
                     device.open()
                     return flow
@@ -90,11 +90,11 @@ interface MidifunkDevice {
             override val output: OutputPort = object : OutputPort {
                 val scope = CoroutineScope(Dispatchers.Default)
 
-                val channel = Channel<MidiEvent>()
+                val channel = Channel<MidiData>()
 
-                override fun open(): SendChannel<MidiEvent> {
+                override fun open(): SendChannel<MidiData> {
                     device.open()
-                    channel.consumeAsFlow().onEach { device.receiver.send(it.convert(), it.timestamp) }.launchIn(scope)
+                    channel.consumeAsFlow().onEach { device.receiver.send(it.toMessage(), it.timestamp) }.launchIn(scope)
                     return channel
                 }
 
@@ -105,7 +105,7 @@ interface MidifunkDevice {
         }
 
 
-        private fun generateReceiver(channel: Channel<MidiEvent>) = object : Receiver {
+        private fun generateReceiver(channel: Channel<MidiData>) = object : Receiver {
             override fun close() {
                 channel.close()
             }

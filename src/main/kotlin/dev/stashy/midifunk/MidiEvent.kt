@@ -2,43 +2,43 @@ package dev.stashy.midifunk
 
 import javax.sound.midi.MidiMessage
 
+
+interface MidiEventCompanion<T> {
+    /**
+     * Creates a MidiEvent from a list of unsigned integers.
+     */
+    fun toEvent(data: List<UInt>, timestamp: Long = 0): T
+
+    /**
+     * MidiEvent DSL builder.
+     */
+    fun create(timestamp: Long = 0, fn: T.() -> Unit): T
+}
+
+/**
+ * MIDI event data class. Use the `convert()` function in the companion object to turn MIDI data into a type-safe object.
+ * Otherwise, use `convert()` on a MidiData object itself to convert it back to a MidiMessage.
+ * To get event-specific data, type check & cast to different MidiData interfaces.
+ * @see MidiData
+ * @see MidiEvent.Companion.convert
+ * @see MidiData.toMessage
+ */
+
 open class MidiEvent(override var data: MutableList<UInt>, override var timestamp: Long = -1) : MidiData {
     companion object {
-        fun convert(message: MidiMessage, timestamp: Long = -1): MidiEvent =
+        fun convert(message: MidiMessage, timestamp: Long = -1): MidiData =
             convert(message.message.mapTo(mutableListOf()) { it.toUInt() }, timestamp)
 
-        fun convert(data: MutableList<UInt>, timestamp: Long = -1): MidiEvent {
+        fun convert(data: MutableList<UInt>, timestamp: Long = -1): MidiData {
             return when (data[0].msb) {
-                MessageTypes.NoteOn, MessageTypes.NoteOff -> object : MidiEvent(data, timestamp),
-                    NoteEvent {}
-
-                MessageTypes.ControlChange -> object : MidiEvent(data, timestamp),
-                    ControlEvent {}
-
-                MessageTypes.Pressure -> object : MidiEvent(data, timestamp),
-                    PressureEvent {}
-
-                MessageTypes.ProgChange -> object : MidiEvent(data, timestamp),
-                    ProgramEvent {}
-
-                MessageTypes.ChannelPressure -> object : MidiEvent(data, timestamp),
-                    PressureEvent, ChannelData {}
-
-                MessageTypes.PitchBend -> object : MidiEvent(data, timestamp),
-                    PitchBendEvent {}
-
-                MessageTypes.SysEx -> object : MidiEvent(data, timestamp),
-                    SysExEvent {}
-
+                MessageTypes.NoteOn, MessageTypes.NoteOff -> NoteEvent.create(data, timestamp)
+                MessageTypes.ControlChange -> ControlEvent.create(data, timestamp)
+                MessageTypes.Pressure -> PressureEvent.create(data, timestamp)
+                MessageTypes.ChannelPressure -> ChannelPressureEvent.create(data, timestamp)
+                MessageTypes.ProgChange -> ProgramEvent.create(data, timestamp)
+                MessageTypes.PitchBend -> PitchBendEvent.create(data, timestamp)
+                MessageTypes.SysEx -> SysExEvent.create(data, timestamp)
                 else -> return object : MidiEvent(data, timestamp) {}
-            }
-        }
-    }
-
-    fun convert(): MidiMessage {
-        return object : MidiMessage(data.map { it.toByte() }.toByteArray()) {
-            override fun clone(): Any {
-                return this
             }
         }
     }
@@ -54,28 +54,67 @@ open class MidiEvent(override var data: MutableList<UInt>, override var timestam
     }
 }
 
+/**
+ * Base MIDI data type - contains data that is shared by all events.
+ * Additional values can be retrieved or modified with other event or data interfaces.
+ */
 interface MidiData {
+    /**
+     * Raw MIDI bytes represented in a list of unsigned integers.
+     */
     var data: MutableList<UInt>
-    var timestamp: Long
-}
 
-interface StatusData : MidiData {
+    var timestamp: Long
+
+    /**
+     * The status byte of an event's MIDI data.
+     * Not recommended to change directly.
+     */
     var status: UInt
         get() = data[0]
         set(value) {
             data[0] = value
         }
-}
 
-interface MessageData : StatusData {
-    var message: UInt
+    /**
+     * The type of MIDI event, corresponding to the ones defined in the MessageTypes object.
+     * @see MessageTypes
+     */
+    var type: UInt
         get() = status.msb
         set(value) {
             status = status.withMsb(value)
         }
+
+    /**
+     * Converts a Midifunk MidiEvent into a Java MidiMessage.
+     * @see MidiMessage
+     */
+    fun toMessage(): MidiMessage {
+        return object : MidiMessage(data.map(UInt::toByte).toByteArray()) {
+            override fun clone(): Any {
+                return this
+            }
+        }
+    }
+
+    companion object {
+        internal fun validate(name: String, data: List<UInt>, size: Int, status: UInt) {
+            if (data.size < size)
+                throw MidiDataException.size(name, size, data.size)
+            data.first().msb.let {
+                if (it != status)
+                    throw MidiDataException.status(name, status, it)
+            }
+        }
+    }
 }
 
-interface ChannelData : StatusData {
+interface ChannelData : MidiData {
+    /**
+     * The channel of a MIDI event.
+     * Channel number must be in the range of 0 to 15.
+     */
     var channel: UInt
         get() = status.lsb
         set(value) {
@@ -83,73 +122,261 @@ interface ChannelData : StatusData {
         }
 }
 
-interface NoteEvent : MidiData,
+interface NoteData : MidiData {
+    /**
+     * The note of a MIDI event.
+     * Note number must be in the range of 0 to 127.
+     */
+    var note: UInt
+        get() = data[1]
+        set(value) {
+            data[1] = value and 127u
+        }
+}
+
+/**
+ * A MIDI note on/off event.
+ */
+interface NoteEvent : MidiData, NoteData,
     ChannelData {
+    /**
+     * Whether the note event is ON (true) or OFF (false).
+     */
     var noteStatus: Boolean
         get() = data[0].msb == MessageTypes.NoteOn
         set(value) {
             data[0] = data[0].withMsb(if (value) MessageTypes.NoteOn else MessageTypes.NoteOff)
         }
-    var note: UInt
-        get() = data[1]
-        set(value) {
-            data[1] = value
-        }
+
+    /**
+     * The velocity of a note event.
+     * Value must be in the range of 0 to 127.
+     */
     var velocity: UInt
         get() = data[2]
         set(value) {
-            data[2] = value
+            data[2] = value and 127u
         }
+
+    companion object : MidiEventCompanion<NoteEvent> {
+        override fun toEvent(data: List<UInt>, timestamp: Long): NoteEvent {
+            if (data.size < 3)
+                throw MidiDataException.size("note", 3, data.size)
+            data.first().msb.let {
+                if (it != MessageTypes.NoteOn || it != MessageTypes.NoteOff)
+                    throw MidiDataException.status("note", MessageTypes.NoteOff, it)
+                // ^ specifies that the byte should only be NoteOff, but it also checks for NoteOn
+            }
+            return create(data, timestamp)
+        }
+
+        override fun create(timestamp: Long, fn: NoteEvent.() -> Unit): NoteEvent =
+            object : MidiEvent(
+                mutableListOf(0u.withMsb(MessageTypes.NoteOn), 0u, 0u),
+                timestamp
+            ), NoteEvent {}.apply { fn.invoke(this) }
+
+        internal fun create(data: List<UInt>, timestamp: Long = 0): NoteEvent =
+            object : MidiEvent(data.toMutableList(), timestamp), NoteEvent {}
+    }
 }
 
+/**
+ * MIDI control change (CC) event.
+ */
 interface ControlEvent : ChannelData {
+    /**
+     * Which control or knob is affected by an event.
+     */
     var control: UInt
         get() = data[1]
         set(value) {
             data[1] = value
         }
+
+    /**
+     * The value of a control or knob.
+     */
     var value: UInt
         get() = data[2]
         set(value) {
             data[2] = value
         }
-}
 
-interface PressureEvent : MessageData,
-    MidiData {
-    var pressure: UInt
-        get() = if (message == MessageTypes.ChannelPressure) data[2] else data[1]
-        set(value) {
-            if (message == MessageTypes.ChannelPressure)
-                data[2] = value
-            else
-                data[1] = value
+    //TODO parsing for CC events
+    // https://www.midimountain.com/midi/midi_control_mode.html
+
+    companion object : MidiEventCompanion<ControlEvent> {
+        override fun toEvent(data: List<UInt>, timestamp: Long): ControlEvent {
+            MidiData.validate("control change", data, 3, MessageTypes.ControlChange)
+            return create(data, timestamp)
         }
+
+        override fun create(timestamp: Long, fn: ControlEvent.() -> Unit): ControlEvent =
+            object : MidiEvent(
+                mutableListOf(0u.withMsb(MessageTypes.ControlChange), 0u, 0u),
+                timestamp
+            ), ControlEvent {}.apply { fn.invoke(this) }
+
+        internal fun create(data: List<UInt>, timestamp: Long = 0): ControlEvent =
+            object : MidiEvent(data.toMutableList(), timestamp), ControlEvent {}
+    }
 }
 
+/**
+ * MIDI polyphonic after-touch event.
+ */
+interface PressureEvent : MidiData, NoteData, ChannelData {
+    /**
+     * The pressure of a given note.
+     * Value must be in the range of 0 to 127.
+     */
+    var pressure: UInt
+        get() = data[2]
+        set(value) {
+            data[2] = value and 127u
+        }
+
+    companion object : MidiEventCompanion<PressureEvent> {
+        override fun toEvent(data: List<UInt>, timestamp: Long): PressureEvent {
+            MidiData.validate("pressure", data, 3, MessageTypes.Pressure)
+            return create(data, timestamp)
+        }
+
+        override fun create(timestamp: Long, fn: PressureEvent.() -> Unit): PressureEvent =
+            object : MidiEvent(
+                mutableListOf(0u.withMsb(MessageTypes.Pressure), 0u, 0u),
+                timestamp
+            ), PressureEvent {}.apply { fn.invoke(this) }
+
+        internal fun create(data: List<UInt>, timestamp: Long = 0): PressureEvent =
+            object : MidiEvent(data.toMutableList(), timestamp), PressureEvent {}
+    }
+}
+
+/**
+ * MIDI channel after-touch event.
+ */
+interface ChannelPressureEvent : MidiData, ChannelData {
+    /**
+     * The pressure of a given channel.
+     * Value must be in the range of 0 to 127.
+     */
+    var pressure: UInt
+        get() = data[1]
+        set(value) {
+            data[1] = value and 127u
+        }
+
+    companion object : MidiEventCompanion<ChannelPressureEvent> {
+        override fun toEvent(data: List<UInt>, timestamp: Long): ChannelPressureEvent {
+            MidiData.validate("channel pressure", data, 2, MessageTypes.ChannelPressure)
+            return create(data, timestamp)
+        }
+
+        override fun create(timestamp: Long, fn: ChannelPressureEvent.() -> Unit): ChannelPressureEvent =
+            object : MidiEvent(
+                mutableListOf(0u.withMsb(MessageTypes.ChannelPressure), 0u, 0u),
+                timestamp
+            ), ChannelPressureEvent {}.apply { fn.invoke(this) }
+
+        internal fun create(data: List<UInt>, timestamp: Long = 0): ChannelPressureEvent =
+            object : MidiEvent(data.toMutableList(), timestamp), ChannelPressureEvent {}
+    }
+}
+
+/**
+ * MIDI program change event.
+ */
 interface ProgramEvent : MidiData,
     ChannelData {
+    /**
+     * The program this event refers to.
+     * Value must be in the range of 0 to 127.
+     */
     var program: UInt
         get() = data[1]
         set(value) {
-            data[1] = value
+            data[1] = value and 127u
         }
+
+    companion object : MidiEventCompanion<ProgramEvent> {
+        override fun toEvent(data: List<UInt>, timestamp: Long): ProgramEvent {
+            MidiData.validate("program change", data, 2, MessageTypes.ProgChange)
+            return create(data, timestamp)
+        }
+
+        override fun create(timestamp: Long, fn: ProgramEvent.() -> Unit): ProgramEvent =
+            object : MidiEvent(
+                mutableListOf(0u.withMsb(MessageTypes.ProgChange), 0u, 0u),
+                timestamp
+            ), ProgramEvent {}.apply { fn.invoke(this) }
+
+        internal fun create(data: List<UInt>, timestamp: Long = 0): ProgramEvent =
+            object : MidiEvent(data.toMutableList(), timestamp), ProgramEvent {}
+    }
 }
 
+/**
+ * MIDI pitch bend event.
+ */
 interface PitchBendEvent : MidiData {
-    var min: UInt
-        get() = data[1].lsb
-        set(value) {
-            data[1] = data[1].withLsb(value)
+    /**
+     * The value of the pitch bend.
+     * Ranges from -1.0 to 1.0. Value of 0 means no pitch change.
+     *
+     * Warning: this value is automatically mapped to and from MIDI data bytes,
+     *  therefore your value is not guaranteed to be the exact same when getting if you set it to an arbitrary value (e.g. 0.2).
+     *  @see MAX_VALUE
+     */
+    var value: Float
+        get() {
+            val combined = (data[2].toInt() shl 7) + data[1].toInt()
+            val normalized = combined / MAX_VALUE.toFloat()
+            return (normalized * 2f) - 1f
         }
-    var max: UInt
-        get() = data[2].msb
         set(value) {
-            data[2] = data[2].withMsb(value)
+            if (value == 0.0f) {
+                data[1] = 0u
+                data[2] = 64u
+                return
+            }
+            val normalized = (value.coerceIn(-1.0f, 1.0f) + 1) / 2.0
+            val combined = (normalized * MAX_VALUE).toInt().coerceIn(0, MAX_VALUE)
+
+            data[1] = (combined and 0x7F).toUInt()
+            data[2] = ((combined shr 7) and 0x7F).toUInt()
         }
+
+    companion object : MidiEventCompanion<PitchBendEvent> {
+        /**
+         * The amount of discrete values a pitch bend event supports, minus one.
+         */
+        const val MAX_VALUE: Int = 16383
+
+        override fun toEvent(data: List<UInt>, timestamp: Long): PitchBendEvent {
+            MidiData.validate("pitch bend", data, 2, MessageTypes.PitchBend)
+            return create(data, timestamp)
+        }
+
+        override fun create(timestamp: Long, fn: PitchBendEvent.() -> Unit): PitchBendEvent =
+            object : MidiEvent(
+                mutableListOf(0u.withMsb(MessageTypes.PitchBend), 0u, 64u),
+                timestamp
+            ), PitchBendEvent {}.apply { fn.invoke(this) }
+
+        internal fun create(data: List<UInt>, timestamp: Long = 0): PitchBendEvent =
+            object : MidiEvent(data.toMutableList(), timestamp), PitchBendEvent {}
+    }
 }
 
+/**
+ * MIDI system exclusive event.
+ */
 interface SysExEvent : MidiData {
+    /**
+     * All system exclusive bytes, excluding the initial byte (0xF & SysEx type).
+     */
     var sysEx: List<UInt>
         get() = data.subList(1, data.size - 1)
         set(value) {
@@ -157,7 +384,12 @@ interface SysExEvent : MidiData {
             l.add(0, data[0])
             data = l
         }
-    var type: Type
+
+    /**
+     * The type of SysEx event, defined in the Type enum.
+     * @see SysExEvent.Type
+     */
+    var sysExType: Type
         get() {
             val i = data[0].toInt() and 0xFF - 240;
             return if (i <= Type.values().size)
@@ -169,6 +401,25 @@ interface SysExEvent : MidiData {
             data[0] = value.code
         }
 
+    companion object : MidiEventCompanion<SysExEvent> {
+        override fun toEvent(data: List<UInt>, timestamp: Long): SysExEvent {
+            MidiData.validate("system exclusive", data, 1, MessageTypes.SysEx)
+            return create(data, timestamp)
+        }
+
+        override fun create(timestamp: Long, fn: SysExEvent.() -> Unit): SysExEvent =
+            object : MidiEvent(
+                mutableListOf(0u.withMsb(MessageTypes.SysEx), 0u, 0u),
+                timestamp
+            ), SysExEvent {}.apply { fn.invoke(this) }
+
+        internal fun create(data: List<UInt>, timestamp: Long = 0): SysExEvent =
+            object : MidiEvent(data.toMutableList(), timestamp), SysExEvent {}
+    }
+
+    /**
+     * All SysEx types defined in the specification.
+     */
     enum class Type(val code: UInt) {
         Unknown(240u),
         TimeCode(241u),
@@ -186,5 +437,15 @@ interface SysExEvent : MidiData {
         Reserved4(253u),
         ActiveSensing(254u),
         SystemReset(255u)
+    }
+}
+
+class MidiDataException(message: String) : Exception(message) {
+    companion object {
+        fun status(name: String, actual: UInt, expected: UInt) =
+            MidiDataException("Invalid MIDI $name event status: expected $expected, received $actual")
+
+        fun size(name: String, expected: Int, actual: Int) =
+            MidiDataException("Invalid MIDI $name event: expected $expected bytes, received $actual")
     }
 }

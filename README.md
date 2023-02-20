@@ -2,7 +2,7 @@
 
 ![Version tag](https://img.shields.io/github/v/release/stashymane/midifunk?label=version&sort=semver&style=flat-square)
 
-An object-based abstraction over the Java MIDI API using Kotlin Coroutines.
+An object- and coroutine-based abstraction over the Java MIDI API using Kotlin Coroutines & Flows.
 
 ## Features
 
@@ -27,35 +27,29 @@ implementation group: 'dev.stashy.midifunk', name: 'midifunk', version: 'x.x.x'
 
 ## Examples
 
-**NOTE**: `whileActive()` stops collecting MIDI events when the device is closed.  
-If you don't use it, make sure you have a way to stop collecting.
-
 ### Opening device for reading inputs
 
 ```kotlin
-Midifunk.descriptors[index].device.receive.whileActive()
-    .collect { /* `receive` automatically opens the device on its first subscription */ }
+val device = Midifunk.descriptors[index].device as InputDevice
+device.input.open().onEach { println(it) }.launchIn(coroutineScope)
 ```
 
-### Event filtering
+### Opening output channel
 
 ```kotlin
-device.receive.whileActive().filter { it is NoteData || it is ControlData }
-    .collect { /* `it` is either a note event, or a CC event */ }
+val device = Midifunk.descriptors[index].device as OutputDevice
+val channel: SendChannel<MidiEvent> = device.output.open()
+channel.trySend(event)
 ```
 
-### Listening to a single event
+### Creating type-safe MIDI events with DSL
 
 ```kotlin
-device.receive.whileActive().mapNotNull { it as? NoteData }.collect { /* `it` is NoteData */ }
-```
-
-### Passing events to another device
-
-```kotlin
-//open is required for OUT devices
-inDevice.receive.whileActive().onStart { outDevice.open() }.onCompletion { outDevice.close() }
-    .collect { outDevice.send(it) }
+NoteEvent.create {
+    noteStatus = true
+    note = 12u
+    velocity = 127u
+}
 ```
 
 ## Contributing
