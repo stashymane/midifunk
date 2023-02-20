@@ -203,9 +203,6 @@ interface ControlEvent : ChannelData {
             data[2] = value
         }
 
-    //TODO parsing for CC events
-    // https://www.midimountain.com/midi/midi_control_mode.html
-
     companion object : MidiEventCompanion<ControlEvent> {
         override fun toEvent(data: List<UInt>, timestamp: Long): ControlEvent {
             MidiData.validate("control change", data, 3, MessageTypes.ControlChange)
