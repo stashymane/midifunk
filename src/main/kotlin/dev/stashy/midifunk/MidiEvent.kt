@@ -323,36 +323,49 @@ interface ProgramEvent : MidiData,
 interface PitchBendEvent : MidiData {
     /**
      * The value of the pitch bend.
-     * Ranges from -1.0 to 1.0. Value of 0 means no pitch change.
+     * @see MAX_VALUE
+     * @see CENTER
+     */
+    var value: UInt
+        get() = data[2] shl 7 or data[1]
+        set(value) {
+            data[1] = value and 127u
+            data[2] = value shr 7 and 127u
+        }
+
+    /**
+     * The value of the pitch bend, represented as a range between -1.0 and 1.0.
      *
      * Warning: this value is automatically mapped to and from MIDI data bytes,
      *  therefore your value is not guaranteed to be the exact same when getting if you set it to an arbitrary value (e.g. 0.2).
-     *  @see MAX_VALUE
+     *
+     * If you need exact precision, consider using the `value` variable.
+     * @see value
      */
-    var value: Float
+    var range: Float
         get() {
-            val combined = (data[2].toInt() shl 7) + data[1].toInt()
-            val normalized = combined / MAX_VALUE.toFloat()
+            val normalized = value.toInt() / MAX_VALUE.toFloat()
             return (normalized * 2f) - 1f
         }
         set(value) {
             if (value == 0.0f) {
-                data[1] = 0u
-                data[2] = 64u
+                this.value = CENTER
                 return
             }
             val normalized = (value.coerceIn(-1.0f, 1.0f) + 1) / 2.0
-            val combined = (normalized * MAX_VALUE).toInt().coerceIn(0, MAX_VALUE)
-
-            data[1] = (combined and 0x7F).toUInt()
-            data[2] = ((combined shr 7) and 0x7F).toUInt()
+            this.value = (normalized * MAX_VALUE.toInt()).toUInt().coerceIn(0u, MAX_VALUE)
         }
 
     companion object : MidiEventCompanion<PitchBendEvent> {
         /**
-         * The amount of discrete values a pitch bend event supports, minus one.
+         * The largest value a pitch bend event can send.
          */
-        const val MAX_VALUE: Int = 16383
+        const val MAX_VALUE: UInt = 16383u
+
+        /**
+         * The value at which the pitch bend is exactly zero.
+         */
+        const val CENTER: UInt = 8192u
 
         override fun toEvent(data: List<UInt>, timestamp: Long): PitchBendEvent {
             MidiData.validate("pitch bend", data, 2, MessageTypes.PitchBend)
