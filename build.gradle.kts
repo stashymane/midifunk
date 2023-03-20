@@ -4,6 +4,7 @@ plugins {
     signing
     id("io.github.gradle-nexus.publish-plugin") version "1.0.0"
     kotlin("jvm") version "1.8.0"
+    jacoco
 }
 
 group = "dev.stashy.midifunk"
@@ -15,7 +16,7 @@ repositories {
 
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.9.1")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
 }
 
 val test: Test by tasks
@@ -78,3 +79,21 @@ signing {
 kotlin {
     jvmToolchain(8)
 }
+
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport)
+    finalizedBy(tasks.jacocoTestCoverageVerification)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(true)
+    }
+}
+
+tasks.jacocoTestCoverageVerification {
+    dependsOn(tasks.test)
+}
+
+
