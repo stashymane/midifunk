@@ -1,5 +1,8 @@
 package dev.stashy.midifunk
 
+import dev.stashy.midifunk.device.InputDevice
+import dev.stashy.midifunk.device.OutputDevice
+import dev.stashy.midifunk.device.asMidifunk
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.launchIn

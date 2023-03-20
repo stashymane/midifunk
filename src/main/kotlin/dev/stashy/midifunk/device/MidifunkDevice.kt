@@ -1,5 +1,9 @@
-package dev.stashy.midifunk
+package dev.stashy.midifunk.device
 
+import dev.stashy.midifunk.MidiData
+import dev.stashy.midifunk.MidiEvent
+import dev.stashy.midifunk.isInput
+import dev.stashy.midifunk.isOutput
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -14,18 +18,6 @@ import javax.sound.midi.Receiver
 val MidiDevice.Info.device get() = MidiSystem.getMidiDevice(this).asMidifunk()
 fun MidiDevice.asMidifunk() = MidifunkDevice.create(this)
 
-interface MidiPort {
-    fun close()
-}
-
-interface InputPort : MidiPort {
-    fun open(): Flow<MidiData>
-}
-
-interface OutputPort : MidiPort {
-    fun open(): SendChannel<MidiData>
-}
-
 interface InputDevice {
     val input: InputPort
 }
@@ -33,7 +25,6 @@ interface InputDevice {
 interface OutputDevice {
     val output: OutputPort
 }
-
 
 interface MidifunkDevice {
     fun close()
@@ -44,19 +35,19 @@ interface MidifunkDevice {
             val isOutput = device.isOutput
 
             return when {
-                isInput && isOutput -> object : MidifunkDevice, InputDevice by wrapInput(device),
-                    OutputDevice by wrapOutput(device) {
+                isInput && isOutput -> object : MidifunkDevice, InputDevice by genericInput(device),
+                    OutputDevice by genericOutput(device) {
                     override fun close() {
                         input.close()
                         output.close()
                     }
                 }
 
-                isInput && !isOutput -> object : MidifunkDevice, InputDevice by wrapInput(device) {
+                isInput && !isOutput -> object : MidifunkDevice, InputDevice by genericInput(device) {
                     override fun close() = input.close()
                 }
 
-                !isInput && isOutput -> object : MidifunkDevice, OutputDevice by wrapOutput(device) {
+                !isInput && isOutput -> object : MidifunkDevice, OutputDevice by genericOutput(device) {
                     override fun close() = output.close()
                 }
 
@@ -66,12 +57,12 @@ interface MidifunkDevice {
             }
         }
 
-        private fun wrapInput(device: MidiDevice): InputDevice = object : InputDevice {
+        fun genericInput(device: MidiDevice): InputDevice = object : InputDevice {
             override val input: InputPort = object : InputPort {
                 val scope = CoroutineScope(Dispatchers.Default)
 
                 val channel = Channel<MidiData>()
-                val receiver = generateReceiver(channel)
+                val receiver = channelReceiver(channel)
                 val flow = channel.consumeAsFlow().shareIn(scope, SharingStarted.WhileSubscribed())
 
                 override fun open(): Flow<MidiData> {
@@ -86,7 +77,7 @@ interface MidifunkDevice {
             }
         }
 
-        private fun wrapOutput(device: MidiDevice): OutputDevice = object : OutputDevice {
+        fun genericOutput(device: MidiDevice): OutputDevice = object : OutputDevice {
             override val output: OutputPort = object : OutputPort {
                 val scope = CoroutineScope(Dispatchers.Default)
 
@@ -106,7 +97,7 @@ interface MidifunkDevice {
         }
 
 
-        private fun generateReceiver(channel: Channel<MidiData>) = object : Receiver {
+        fun channelReceiver(channel: Channel<MidiData>) = object : Receiver {
             override fun close() {
                 channel.close()
             }
