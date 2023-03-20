@@ -4,6 +4,9 @@
 
 An object- and coroutine-based abstraction over the Java MIDI API using Kotlin Coroutines & Flows.
 
+Note: this is still in a pre-release stage, expect breaking changes until the first stable release.
+This README reflects the current development branch, not the released version.
+
 ## Features
 
 * Type-safe MIDI events
@@ -47,7 +50,7 @@ channel.trySend(event)
 ```kotlin
 NoteEvent.create {
     noteStatus = true
-    note = 12u
+    note = Note.C(4)
     velocity = 127u
 }
 ```
