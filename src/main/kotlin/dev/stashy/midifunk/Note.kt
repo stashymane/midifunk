@@ -1,5 +1,10 @@
 package dev.stashy.midifunk
 
+/**
+ * Note builder class.
+ * Octaves must be between -1 and 9.
+ * Middle C is assumed as C4 - if your device defines it differently, you will have to offset the octave from C4.
+ */
 object Note {
     fun C(oct: Int): UInt = offset(oct)
     fun CSharp(oct: Int): UInt = offset(oct) + 1u
@@ -14,5 +19,5 @@ object Note {
     fun ASharp(oct: Int): UInt = offset(oct) + 10u
     fun B(oct: Int): UInt = offset(oct) + 11u
 
-    private fun offset(oct: Int): UInt = (oct + 2).toUInt() * 12u
+    private fun offset(oct: Int): UInt = (oct + 1).toUInt() * 12u
 }
