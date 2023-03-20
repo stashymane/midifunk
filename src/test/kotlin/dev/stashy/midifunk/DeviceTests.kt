@@ -47,20 +47,17 @@ class DeviceTests {
         var collected = 0
         val scope = CoroutineScope(Dispatchers.Default)
 
-        val mf = testDevice.asMidifunk()
+        val dev = testDevice.asMidifunk()
         testDevice.sendCallback = { collected++ }
-        Assertions.assertTrue(mf is OutputDevice)
-        val oDevice = mf as OutputDevice
+        Assertions.assertTrue(dev is OutputDevice)
 
-        val channel = oDevice.output.open()
+        val channel = (dev as OutputDevice).output.open()
         runBlocking {
-            repeat(n) {
-                channel.send(noteEvent)
-            }
+            repeat(n) { channel.send(noteEvent) }
         }
 
         Assertions.assertEquals(n, collected, "All output messages were not received")
-        mf.close()
+        dev.close()
 
         val device = testDevice.asMidifunk() as OutputDevice
         val c: SendChannel<MidiEvent> = device.output.open()

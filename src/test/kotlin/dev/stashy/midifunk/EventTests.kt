@@ -97,7 +97,6 @@ class EventTests {
         val testValues =
             generateSequence(-1.0f) { (it + increment) }.takeWhile { it <= 1.0f } + sequenceOf(0.0f, 1.0f)
         testValues.forEach {
-            println(it)
             val event = PitchBendEvent.create { range = it }
             assertTrue(floatsEqual(it, event.range, precision), "Tested value: $it, received value: ${event.range}")
         }

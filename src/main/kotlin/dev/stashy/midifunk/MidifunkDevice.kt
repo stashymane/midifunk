@@ -94,7 +94,8 @@ interface MidifunkDevice {
 
                 override fun open(): SendChannel<MidiData> {
                     device.open()
-                    channel.consumeAsFlow().onEach { device.receiver.send(it.toMessage(), it.timestamp) }.launchIn(scope)
+                    channel.consumeAsFlow().onEach { device.receiver.send(it.toMessage(), it.timestamp) }
+                        .launchIn(scope)
                     return channel
                 }
 
