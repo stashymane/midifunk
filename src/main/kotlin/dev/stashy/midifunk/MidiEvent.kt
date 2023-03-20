@@ -126,6 +126,7 @@ interface NoteData : MidiData {
     /**
      * The note of a MIDI event.
      * Note number must be in the range of 0 to 127.
+     * @see Note
      */
     var note: UInt
         get() = data[1]
@@ -163,9 +164,8 @@ interface NoteEvent : MidiData, NoteData,
             if (data.size < 3)
                 throw MidiDataException.size("note", 3, data.size)
             data.first().msb.let {
-                if (it != MessageTypes.NoteOn || it != MessageTypes.NoteOff)
-                    throw MidiDataException.status("note", MessageTypes.NoteOff, it)
-                // ^ specifies that the byte should only be NoteOff, but it also checks for NoteOn
+                if (it != MessageTypes.NoteOn && it != MessageTypes.NoteOff)
+                    throw MidiDataException.status("note", listOf(MessageTypes.NoteOn, MessageTypes.NoteOn), it)
             }
             return create(data, timestamp)
         }
@@ -452,8 +452,10 @@ interface SysExEvent : MidiData {
 
 class MidiDataException(message: String) : Exception(message) {
     companion object {
-        fun status(name: String, actual: UInt, expected: UInt) =
-            MidiDataException("Invalid MIDI $name event status: expected $expected, received $actual")
+        fun status(name: String, expected: List<UInt>, actual: UInt) =
+            MidiDataException("Invalid MIDI $name event status: expected ${expected.joinToString { "," }}, received $actual")
+
+        fun status(name: String, expected: UInt, actual: UInt) = status(name, listOf(expected), actual)
 
         fun size(name: String, expected: Int, actual: Int) =
             MidiDataException("Invalid MIDI $name event: expected $expected bytes, received $actual")

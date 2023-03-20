@@ -1,7 +1,7 @@
 package dev.stashy.midifunk
 
 /**
- * Note builder class.
+ * Note builder object.
  * Octaves must be between -1 and 9.
  * Middle C is assumed as C4 - if your device defines it differently, you will have to offset the octave from C4.
  */
