@@ -2,9 +2,9 @@
 
 ![Version tag](https://img.shields.io/github/v/release/stashymane/midifunk?label=version&sort=semver&style=flat-square)
 
-An object- and coroutine-based abstraction over the Java MIDI API using Kotlin Coroutines & Flows.
+An object- and coroutine-based abstraction over the Java MIDI API using Kotlin coroutines & channels.
 
-Note: this is still in a pre-release stage, expect breaking changes until the first stable release.
+Note: this is still in an experimental stage, expect breaking changes until the first stable release.
 This README reflects the current development branch, not the released version.
 
 ## Features
@@ -54,6 +54,15 @@ NoteEvent.create {
     velocity = 127u
 }
 ```
+
+## Roadmap
+
+Top priority at the moment is to finalize the device input/output API.
+The eventual goal is to be able to completely rip out the Java MIDI backend & use something else, which will also
+provide multiplatform support.
+
+After the device API, virtual device support is going to be prioritized.
+This will most likely require separate backends for each platform to be implemented already.
 
 ## Contributing
 
