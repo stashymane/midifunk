@@ -1,8 +1,5 @@
 package dev.stashy.midifunk
 
-import javax.sound.midi.MidiMessage
-
-
 interface MidiEventCompanion<T> {
     /**
      * Creates a MidiEvent from a list of unsigned integers.
@@ -26,9 +23,6 @@ interface MidiEventCompanion<T> {
 
 open class MidiEvent(override var data: MutableList<UInt>, override var timestamp: Long = -1) : MidiData {
     companion object {
-        fun convert(message: MidiMessage, timestamp: Long = -1): MidiData =
-            convert(message.message.mapTo(mutableListOf()) { it.toUInt() }, timestamp)
-
         fun convert(data: MutableList<UInt>, timestamp: Long = -1): MidiData {
             return when (data[0].msb) {
                 MessageTypes.NoteOn, MessageTypes.NoteOff -> NoteEvent.create(data, timestamp)
@@ -85,18 +79,6 @@ interface MidiData {
         set(value) {
             status = status.withMsb(value)
         }
-
-    /**
-     * Converts a Midifunk MidiEvent into a Java MidiMessage.
-     * @see MidiMessage
-     */
-    fun toMessage(): MidiMessage {
-        return object : MidiMessage(data.map(UInt::toByte).toByteArray()) {
-            override fun clone(): Any {
-                return this
-            }
-        }
-    }
 
     companion object {
         internal fun validate(name: String, data: List<UInt>, size: Int, status: UInt) {
@@ -402,8 +384,8 @@ interface SysExEvent : MidiData {
     var sysExType: Type
         get() {
             val i = data[0].toInt() and 0xFF - 240;
-            return if (i <= Type.values().size)
-                Type.values()[i]
+            return if (i <= Type.entries.size)
+                Type.entries[i]
             else
                 Type.Unknown
         }
