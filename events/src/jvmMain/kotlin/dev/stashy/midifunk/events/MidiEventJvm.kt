@@ -1,4 +1,4 @@
-package dev.stashy.midifunk
+package dev.stashy.midifunk.events
 
 import javax.sound.midi.MidiMessage
 
