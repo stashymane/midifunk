@@ -27,7 +27,11 @@ class MidiDeviceJvm(private val device: javax.sound.midi.MidiDevice, index: Int)
     override val input: MidiPort.Input = InputPort()
     override val output: MidiPort.Output = OutputPort()
 
-    override fun close() = device.close()
+    override fun close() {
+        input.close()
+        output.close()
+        device.close()
+    }
 
     private inner class InputPort : MidiPort.Input {
         private val channel = Channel<MidiData>()
