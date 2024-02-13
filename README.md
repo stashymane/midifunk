@@ -33,16 +33,16 @@ implementation group: 'dev.stashy.midifunk', name: 'midifunk', version: 'x.x.x'
 ### Opening device for reading inputs
 
 ```kotlin
-val device = Midifunk.descriptors[index].device as InputDevice
-device.input.open().onEach { println(it) }.launchIn(coroutineScope)
+val device = MidiDevice.list()[0]
+device.input.open(coroutineScope).onEach { println(it) }
 ```
 
 ### Opening output channel
 
 ```kotlin
-val device = Midifunk.descriptors[index].device as OutputDevice
-val channel: SendChannel<MidiEvent> = device.output.open()
-channel.trySend(event)
+val device = MidiDevice.list()[0]
+val channel: SendChannel<MidiData> = device.output.open()
+channel.send(event)
 ```
 
 ### Creating type-safe MIDI events with DSL
