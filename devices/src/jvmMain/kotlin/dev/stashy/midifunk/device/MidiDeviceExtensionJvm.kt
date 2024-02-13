@@ -6,3 +6,6 @@ import javax.sound.midi.MidiSystem
 internal actual fun listMidiDevices(): List<MidiDevice> =
     MidiSystem.getMidiDeviceInfo().groupBy { it.name }
         .flatMap { it.value.mapIndexed { index, info -> MidiDeviceJvm(info, index) } }
+
+internal actual fun getMidiDeviceById(id: String): MidiDevice? =
+    listMidiDevices().find { it.id == id }
