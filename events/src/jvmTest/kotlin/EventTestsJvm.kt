@@ -15,8 +15,6 @@ class EventTestsJvm {
         private val sysExEvent = MidiEvent.convert(sysEx.data())
     }
 
-    private val testDevice = TestDevice()
-
     @Test
     fun conversionTest() {
         assertTrue(noteEvent is NoteEvent)
