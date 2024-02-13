@@ -1,6 +1,6 @@
 package dev.stashy.midifunk.device
 
-interface MidiDevice {
+interface MidiDevice : AutoCloseable {
     companion object {
         fun list(): List<MidiDevice> = listMidiDevices()
         fun get(id: String): MidiDevice? = getMidiDeviceById(id)
