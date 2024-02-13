@@ -3,7 +3,7 @@ import javax.sound.midi.MidiMessage
 import javax.sound.midi.Receiver
 import javax.sound.midi.Transmitter
 
-class TestDevice : MidiDevice {
+class TestDeviceJvm : MidiDevice {
     var sendCallback: (MidiMessage) -> Unit = {}
 
     private var isOpen = false
@@ -63,7 +63,7 @@ class TestDevice : MidiDevice {
         return 1
     }
 
-    inner class TestTransmitter : Transmitter {
+    private inner class TestTransmitter : Transmitter {
         private var rec: Receiver? = null
 
         override fun getReceiver(): Receiver? {
