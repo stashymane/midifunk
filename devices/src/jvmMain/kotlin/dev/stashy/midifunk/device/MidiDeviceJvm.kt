@@ -68,7 +68,7 @@ class MidiDeviceJvm(private val device: javax.sound.midi.MidiDevice, index: Int)
         }
 
         override fun close() {
-            device.transmitter.receiver.close()
+            device.transmitter?.receiver?.close()
             channel.close()
         }
     }
