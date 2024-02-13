@@ -15,21 +15,21 @@ import javax.sound.midi.MidiMessage
 import javax.sound.midi.MidiSystem
 import javax.sound.midi.Receiver
 
-class MidiDeviceJvm(private val descriptor: javax.sound.midi.MidiDevice.Info, index: Int) : MidiDevice {
-    override val id: String = "${descriptor.name} #${index + 1}"
-    override val name: String = descriptor.name
-    override val vendor: String = descriptor.vendor
-    override val description: String = descriptor.description
-    override val version: String = descriptor.version
+class MidiDeviceJvm(private val device: javax.sound.midi.MidiDevice, index: Int) : MidiDevice {
+    constructor(info: javax.sound.midi.MidiDevice.Info, index: Int) : this(MidiSystem.getMidiDevice(info), index)
 
-    private val device = MidiSystem.getMidiDevice(descriptor)
+    override val id: String = "${device.deviceInfo.name} #${index + 1}"
+    override val name: String = device.deviceInfo.name
+    override val vendor: String = device.deviceInfo.vendor
+    override val description: String = device.deviceInfo.description
+    override val version: String = device.deviceInfo.version
 
     override val input: MidiPort.Input = InputPort()
     override val output: MidiPort.Output = OutputPort()
 
     override fun close() = device.close()
 
-    inner class InputPort : MidiPort.Input {
+    private inner class InputPort : MidiPort.Input {
         private val channel = Channel<MidiData>()
 
         override val isPresent: Boolean
@@ -47,7 +47,7 @@ class MidiDeviceJvm(private val descriptor: javax.sound.midi.MidiDevice.Info, in
         }
     }
 
-    inner class OutputPort : MidiPort.Output {
+    private inner class OutputPort : MidiPort.Output {
         private val channel = Channel<MidiData>()
 
         override val isPresent: Boolean
