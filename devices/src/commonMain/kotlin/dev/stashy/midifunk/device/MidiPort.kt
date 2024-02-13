@@ -17,7 +17,6 @@ interface MidiPort<T> : AutoCloseable {
      * Opens the device & port and returns the according channel.
      * @throws PortUnavailableException when the port is not available on this device.
      */
-    @Throws(PortUnavailableException::class)
     fun open(scope: CoroutineScope): T
 
     interface Input : MidiPort<ReceiveChannel<MidiData>>
