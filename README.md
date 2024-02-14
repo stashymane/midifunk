@@ -41,7 +41,7 @@ device.input.open(coroutineScope).onEach { println(it) }
 
 ```kotlin
 val device = MidiDevice.list()[0]
-val channel: SendChannel<MidiData> = device.output.open()
+val channel: SendChannel<MidiData> = device.output.open(coroutineScope)
 channel.send(event)
 ```
 
