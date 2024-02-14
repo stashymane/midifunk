@@ -11,5 +11,8 @@ kotlin {
 
             implementation(project(":events"))
         }
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+        }
     }
 }
