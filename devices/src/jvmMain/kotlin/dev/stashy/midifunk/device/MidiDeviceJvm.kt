@@ -5,18 +5,18 @@ import dev.stashy.midifunk.events.MidiEvent
 import dev.stashy.midifunk.events.data
 import dev.stashy.midifunk.events.toJvmMessage
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
-import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.sound.midi.MidiMessage
 import javax.sound.midi.MidiSystem
 import javax.sound.midi.Receiver
 
-class MidiDeviceJvm(private val device: javax.sound.midi.MidiDevice, index: Int) : MidiDevice {
-    constructor(info: javax.sound.midi.MidiDevice.Info, index: Int) : this(MidiSystem.getMidiDevice(info), index)
+class MidiDeviceJvm(private val device: javax.sound.midi.MidiDevice, index: Int = 0) : MidiDevice {
+    constructor(info: javax.sound.midi.MidiDevice.Info, index: Int = 0) : this(MidiSystem.getMidiDevice(info), index)
 
     override val id: String = "${device.deviceInfo.name} #${index + 1}"
     override val name: String = device.deviceInfo.name
@@ -34,7 +34,13 @@ class MidiDeviceJvm(private val device: javax.sound.midi.MidiDevice, index: Int)
     }
 
     private inner class InputPort : MidiPort.Input {
-        private val channel = Channel<MidiData>()
+        @OptIn(ExperimentalCoroutinesApi::class)
+        private val channel = Channel<MidiData>().apply {
+            invokeOnClose {
+                device.transmitter?.receiver?.close()
+                device.transmitter?.close()
+            }
+        }
 
         override val isPresent: Boolean
             get() = device.maxReceivers != -1
@@ -46,13 +52,17 @@ class MidiDeviceJvm(private val device: javax.sound.midi.MidiDevice, index: Int)
         }
 
         override fun close() {
-            device.transmitter.close()
             channel.close()
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private inner class OutputPort : MidiPort.Output {
-        private val channel = Channel<MidiData>()
+        private val channel = Channel<MidiData>().apply {
+            invokeOnClose {
+                device.receiver?.close()
+            }
+        }
 
         override val isPresent: Boolean
             get() = device.maxTransmitters != -1
@@ -60,15 +70,14 @@ class MidiDeviceJvm(private val device: javax.sound.midi.MidiDevice, index: Int)
         override fun open(scope: CoroutineScope): SendChannel<MidiData> {
             device.open()
             scope.launch {
-                channel.consumeEach {
-                    device.receiver.send(it.toJvmMessage(), it.timestamp)
+                for (data in channel) {
+                    device.receiver.send(data.toJvmMessage(), data.timestamp)
                 }
             }
             return channel
         }
 
         override fun close() {
-            device.transmitter?.receiver?.close()
             channel.close()
         }
     }
