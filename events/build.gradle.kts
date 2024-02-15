@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
+    id("maven-publish")
 }
 
 kotlin {
@@ -14,5 +15,11 @@ kotlin {
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
+    }
+}
+
+publishing {
+    repositories {
+        maven("https://repo.stashy.dev")
     }
 }
