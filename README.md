@@ -10,22 +10,27 @@ This README reflects the current development branch, not the released version.
 ## Features
 
 * Type-safe MIDI events
-* MIDI as consumable flows
+* MIDI as consumable channels with Coroutines
 * Minimal code required for listening
 * Easy input & output
 
+## Platforms
+
+| Platform | Compatibility |
+| -------- | ------------- |
+| JVM      | ✅ |
+| Windows  | ✖️ (waiting on Windows Midi Services) |
+| Linux    | ✖️ (after Windows) |
+| MacOS    | ✖️ (no device for testing available) |
+
 ## Usage
+
+**Version currently available on Maven Central is outdated, current README is for the next one.**
 
 Gradle Kotlin
 
 ```kotlin
 implementation("dev.stashy.midifunk", "midifunk", "x.x.x")
-```
-
-Gradle
-
-```groovy
-implementation group: 'dev.stashy.midifunk', name: 'midifunk', version: 'x.x.x'
 ```
 
 ## Examples
