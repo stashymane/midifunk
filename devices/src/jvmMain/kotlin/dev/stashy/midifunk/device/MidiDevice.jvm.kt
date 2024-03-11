@@ -18,7 +18,7 @@ import javax.sound.midi.Receiver
 class MidiDeviceJvm(private val device: javax.sound.midi.MidiDevice, index: Int = 0) : MidiDevice {
     constructor(info: javax.sound.midi.MidiDevice.Info, index: Int = 0) : this(MidiSystem.getMidiDevice(info), index)
 
-    override val id: String = "${device.deviceInfo.name} #${index + 1}"
+    override val id: String = "${device.deviceInfo} #${index + 1}"
     override val name: String = device.deviceInfo.name
     override val vendor: String = device.deviceInfo.vendor
     override val description: String = device.deviceInfo.description

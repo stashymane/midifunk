@@ -9,9 +9,15 @@ interface MidiDevice : AutoCloseable {
 
         /**
          * Gets a MIDI device by its ID.
-         * @return The MIDI device, or null if it is not present.
+         * @return The requested MIDI device, or null if it is not present.
          */
         fun get(id: String): MidiDevice? = getMidiDeviceById(id)
+
+        /**
+         * Suspends until the device with the specified ID is available. Returns immediately if it is already present.
+         * @return The requested MIDI device.
+         */
+        suspend fun await(id: String): MidiDevice = get(id) ?: DevicePoller.awaitDevice(id).await()
     }
 
     val id: String

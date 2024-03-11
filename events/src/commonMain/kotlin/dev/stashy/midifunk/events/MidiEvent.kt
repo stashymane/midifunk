@@ -18,7 +18,6 @@ interface MidiEventCompanion<T> {
  * To get event-specific data, type check & cast to different MidiData interfaces.
  * @see MidiData
  * @see MidiEvent.Companion.convert
- * @see MidiData.toMessage
  */
 
 open class MidiEvent(override var data: MutableList<UInt>, override var timestamp: Long = -1) : MidiData {
