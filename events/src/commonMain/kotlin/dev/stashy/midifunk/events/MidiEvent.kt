@@ -81,12 +81,8 @@ interface MidiData {
 
     companion object {
         internal fun validate(name: String, data: List<UInt>, size: Int, status: UInt) {
-            if (data.size < size)
-                throw MidiDataException.size(name, size, data.size)
-            data.first().msb.let {
-                if (it != status)
-                    throw MidiDataException.status(name, status, it)
-            }
+            require(data.size >= size) { "Expected $size bytes for $name, received ${data.size}" }
+            require(data.first().msb == status) { "Expected MIDI $name status of $status, received ${data.first().msb}" }
         }
     }
 }
@@ -141,13 +137,14 @@ interface NoteEvent : MidiData, NoteData,
         }
 
     companion object : MidiEventCompanion<NoteEvent> {
+        private val validEvents: Set<UInt> = setOf(MessageTypes.NoteOn, MessageTypes.NoteOff)
+
         override fun toEvent(data: List<UInt>, timestamp: Long): NoteEvent {
-            if (data.size < 3)
-                throw MidiDataException.size("note", 3, data.size)
-            data.first().msb.let {
-                if (it != MessageTypes.NoteOn && it != MessageTypes.NoteOff)
-                    throw MidiDataException.status("note", listOf(MessageTypes.NoteOn, MessageTypes.NoteOn), it)
-            }
+            require(data.size >= 3) { "Expected note data to have 3 elements." }
+            require(
+                validEvents.contains(data.first().msb)
+            ) { "Event status is not a note event." }
+
             return create(data, timestamp)
         }
 
@@ -314,7 +311,7 @@ interface PitchBendEvent : MidiData {
     /**
      * The value of the pitch bend, represented as a range between -1.0 and 1.0.
      *
-     * Warning: this value is automatically mapped to and from MIDI data bytes,
+     * **Warning**: this value is automatically mapped to and from MIDI data bytes,
      *  therefore your value is not guaranteed to be the exact same when getting if you set it to an arbitrary value (e.g. 0.2).
      *
      * If you need exact precision, consider using the `value` variable.
@@ -428,17 +425,5 @@ interface SysExEvent : MidiData {
         Reserved4(253u),
         ActiveSensing(254u),
         SystemReset(255u)
-    }
-}
-
-class MidiDataException(message: String) : Exception(message) {
-    companion object {
-        fun status(name: String, expected: List<UInt>, actual: UInt) =
-            MidiDataException("Invalid MIDI $name event status: expected ${expected.joinToString { "," }}, received $actual")
-
-        fun status(name: String, expected: UInt, actual: UInt) = status(name, listOf(expected), actual)
-
-        fun size(name: String, expected: Int, actual: Int) =
-            MidiDataException("Invalid MIDI $name event: expected $expected bytes, received $actual")
     }
 }
