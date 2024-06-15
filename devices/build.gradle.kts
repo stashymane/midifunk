@@ -10,7 +10,7 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.coroutines.core)
 
-            implementation(project(":events"))
+            implementation(projects.events)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

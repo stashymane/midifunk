@@ -1,36 +1,46 @@
 # midifunk
 
-![Version tag](https://img.shields.io/github/v/release/stashymane/midifunk?label=version&sort=semver&style=flat-square)
+![Version tag](https://img.shields.io/maven-central/v/dev.stashy.midifunk/midifunk?logo=apachemaven&label=Maven%20Central&color=%23339AF0)
 
-An object- and coroutine-based abstraction over the Java MIDI API using Kotlin coroutines & channels.
+Kotlin Multiplatform MIDI library that just makes sense.  
+Currently focused on live MIDI I/O.
 
 Note: this is still in an experimental stage, expect breaking changes until the first stable release.
-This README reflects the current development branch, not the released version.
 
 ## Features
 
-* Type-safe MIDI events
+* Type-safe MIDI events with the `events` module
 * MIDI as consumable channels with Coroutines
 * Minimal code required for listening
 * Easy input & output
 
 ## Platforms
 
-| Platform | Compatibility |
-| -------- | ------------- |
-| JVM      | ✅ |
-| Windows  | ✖️ (waiting on Windows Midi Services) |
-| Linux    | ✖️ (after Windows) |
-| MacOS    | ✖️ (no device for testing available) |
+| Platform | Events | Devices                               |
+|:---------|:-------|:--------------------------------------|
+| JVM      | ✅️     | ✅️                                    |
+| Windows  | ✅️     | ✖️ (waiting on Windows Midi Services) |
+| Linux    | ✅️     | ✖️ (after Windows)                    |
+| MacOS    | ✅️     | ✖️ (no device for testing available)  |
 
 ## Usage
 
-**Version currently available on Maven Central is outdated, current README is for the next one.**
+Version catalog
+
+```toml
+[versions]
+midifunk = "[version]"
+
+[libraries]
+midifunk-events = { module = "dev.stashy.midifunk:events", version.ref = "midifunk" }
+midifunk-devices = { module = "dev.stashy.midifunk:devices", version.ref = "midifunk" }
+```
 
 Gradle Kotlin
 
 ```kotlin
-implementation("dev.stashy.midifunk", "midifunk", "x.x.x")
+implementation("dev.stashy.midifunk", "events", "version")
+implementation("dev.stashy.midifunk", "devices", "version")
 ```
 
 ## Examples
