@@ -26,7 +26,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Publish on Maven Central
-        run: ./gradlew publishToSonatype closeAndReleaseStagingRepository
+        run: ./gradlew publish
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.SONATYPE_PASSWORD }}

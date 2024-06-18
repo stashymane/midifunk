@@ -16,4 +16,4 @@ dependencyResolutionManagement {
     }
 }
 
-include(":events", ":devices", ":virtual-devices")
+include(":events", ":devices")
