@@ -1,6 +1,4 @@
-# midifunk
-
-![Version tag](https://img.shields.io/maven-central/v/dev.stashy.midifunk/midifunk?logo=apachemaven&label=Maven%20Central&color=%23339AF0)
+# midifunk [![Version tag](https://img.shields.io/maven-central/v/dev.stashy.midifunk/midifunk?logo=apachemaven&label=Maven%20Central&color=%23339AF0)][Maven central]
 
 Kotlin Multiplatform MIDI library that just makes sense.  
 Currently focused on live MIDI I/O.
@@ -85,3 +83,5 @@ Although not strictly, please try to adhere to the [standard Kotlin code style g
 in JetBrains IDEs. Other than that, feel free to submit pull requests - I will gladly review them.
 
 [1]: https://kotlinlang.org/docs/reference/coding-conventions.html
+
+[Maven central]: https://central.sonatype.com/namespace/dev.stashy.midifunk
