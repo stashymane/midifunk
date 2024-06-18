@@ -19,12 +19,32 @@ kotlin {
     }
 }
 
+val releaseRepo: String by project.properties
+val snapshotRepo: String by project.properties
+val sonatypeUsername = project.findProperty("sonatypeUsername")?.toString()
+val sonatypePassword = project.findProperty("sonatypePassword")?.toString()
+
+publishing {
+    repositories {
+        maven {
+            name = "MavenCentral"
+            url = if (version.toString().endsWith("SNAPSHOT")) uri(snapshotRepo) else uri(releaseRepo)
+
+            credentials {
+                username = sonatypeUsername
+                password = sonatypePassword
+            }
+        }
+    }
+}
+
+val signingKeyId: String? by project
+val signingKey: String? by project
+val signingPassword: String? by project
+
 signing {
     isRequired = gradle.taskGraph.allTasks.any { it is PublishToMavenRepository }
-
-    val signingKeyId: String? by project
-    val signingKey: String? by project
-    val signingPassword: String? by project
     useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
     sign(publishing.publications)
 }
+
