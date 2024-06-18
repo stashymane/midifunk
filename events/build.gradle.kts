@@ -21,6 +21,7 @@ kotlin {
 
 val releaseRepo: String by project.properties
 val snapshotRepo: String by project.properties
+val repo = if (version.toString().endsWith("SNAPSHOT")) snapshotRepo else releaseRepo
 val sonatypeUsername = project.findProperty("sonatypeUsername")?.toString()
 val sonatypePassword = project.findProperty("sonatypePassword")?.toString()
 
@@ -28,7 +29,7 @@ publishing {
     repositories {
         maven {
             name = "MavenCentral"
-            url = if (version.toString().endsWith("SNAPSHOT")) uri(snapshotRepo) else uri(releaseRepo)
+            url = uri(repo)
 
             credentials {
                 username = sonatypeUsername
