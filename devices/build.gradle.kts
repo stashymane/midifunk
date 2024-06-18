@@ -44,7 +44,7 @@ val signingKey: String? by project
 val signingPassword: String? by project
 
 signing {
-    isRequired = gradle.taskGraph.allTasks.any { it is PublishToMavenRepository }
+    isRequired = false
     useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
     sign(publishing.publications)
 }
