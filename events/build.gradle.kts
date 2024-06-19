@@ -1,6 +1,6 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
-    id("maven-publish")
+    alias(libs.plugins.publish)
     id("signing")
 }
 
