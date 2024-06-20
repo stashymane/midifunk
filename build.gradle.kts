@@ -7,5 +7,5 @@ plugins {
 
 allprojects {
     group = "dev.stashy.midifunk"
-    version = "0.8.0-SNAPSHOT"
+    version = "0.8.0"
 }
