@@ -14,12 +14,12 @@ Note: this is still in an experimental stage, expect breaking changes until the 
 
 ## Platforms
 
-| Platform | Events | Devices                               |
-|:---------|:-------|:--------------------------------------|
-| JVM      | ✅️     | ✅️                                    |
-| Windows  | ✅️     | ✖️ (waiting on Windows Midi Services) |
-| Linux    | ✅️     | ✖️ (after Windows)                    |
-| MacOS    | ✅️     | ✖️ (no device for testing available)  |
+| Platform | Events | Devices | Comment                                         |
+|:---------|:-------|:--------|:------------------------------------------------|
+| JVM      | ✅️     | ✅️      |                                                 |
+| Windows  | ✅️     | ✖️      | Waiting on Windows MIDI services                |
+| Linux    | ✅️     | ✖️      | Devices support coming after Windows            |
+| MacOS    | ❔️     | ✖️      | No device for testing or development available. |
 
 ## Usage
 
