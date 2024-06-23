@@ -1,4 +1,4 @@
-# midifunk [![Version tag](https://img.shields.io/maven-central/v/dev.stashy.midifunk/midifunk?logo=apachemaven&label=Maven%20Central&color=%23339AF0)][Maven central]
+# midifunk [![Version tag](https://img.shields.io/maven-central/v/dev.stashy.midifunk/events?logo=apachemaven&label=Maven%20Central&color=%23339AF0)][Maven central]
 
 Kotlin Multiplatform MIDI library that just makes sense.  
 Currently focused on live MIDI I/O.
