@@ -5,7 +5,6 @@ import dev.stashy.midifunk.events.MidiEvent
 import dev.stashy.midifunk.events.data
 import dev.stashy.midifunk.events.toJvmMessage
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
@@ -14,11 +13,12 @@ import kotlinx.coroutines.runBlocking
 import javax.sound.midi.MidiMessage
 import javax.sound.midi.MidiSystem
 import javax.sound.midi.Receiver
+import javax.sound.midi.MidiDevice as JavaMidiDevice
 
-class MidiDeviceJvm(private val device: javax.sound.midi.MidiDevice, index: Int = 0) : MidiDevice {
-    constructor(info: javax.sound.midi.MidiDevice.Info, index: Int = 0) : this(MidiSystem.getMidiDevice(info), index)
+class MidiDeviceJvm(private val device: JavaMidiDevice, index: Int = 0) : MidiDevice {
+    constructor(info: JavaMidiDevice.Info, index: Int = 0) : this(MidiSystem.getMidiDevice(info), index)
 
-    override val id: String = "${device.deviceInfo} #${index + 1}"
+    override val id: String = "jvm-${device.deviceInfo.hashCode().toString(16)}"
     override val name: String = device.deviceInfo.name
     override val vendor: String = device.deviceInfo.vendor
     override val description: String = device.deviceInfo.description
@@ -34,7 +34,6 @@ class MidiDeviceJvm(private val device: javax.sound.midi.MidiDevice, index: Int 
     }
 
     private inner class InputPort : MidiPort.Input {
-        @OptIn(ExperimentalCoroutinesApi::class)
         private val channel = Channel<MidiData>().apply {
             invokeOnClose {
                 device.transmitter?.receiver?.close()
@@ -56,7 +55,6 @@ class MidiDeviceJvm(private val device: javax.sound.midi.MidiDevice, index: Int 
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     private inner class OutputPort : MidiPort.Output {
         private val channel = Channel<MidiData>().apply {
             invokeOnClose {
